@@ -935,6 +935,10 @@ function AdminLoginForm({
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
         />
 
+        <div className="text-[11px] font-bold text-slate-700 text-center">
+          Enter as: <span className="text-slate-950">{formId}</span>
+        </div>
+
         {error && (
           <div className="text-[11px] font-bold text-red-600 text-center">
             {error}
