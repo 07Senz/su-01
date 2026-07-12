@@ -291,43 +291,127 @@ export default function AppRouter() {
       <div className="absolute top-[15%] right-[-10%] w-[600px] h-[600px] bg-[#fce7f3]/50 rounded-full filter blur-[100px] pointer-events-none mix-blend-multiply" />
 
       {/* HEADER NAVIGATION */}
-      <nav className="w-full bg-white/70 backdrop-blur-md px-8 py-6 flex justify-center items-center border-b border-slate-100 sticky top-0 z-50">
-        <div className="flex gap-2 group/nav">
-          {navItems.map((item) => {
-            const gradients = {
-              Home: "hover:from-emerald-500 hover:to-emerald-600",
-              About: "hover:from-blue-500 hover:to-indigo-500",
-              Activities: "hover:from-orange-400 hover:to-pink-500",
-              Events: "hover:from-purple-500 hover:to-violet-600",
-              Leadership: "hover:from-rose-500 hover:to-red-600",
-              Gallery: "hover:from-amber-400 hover:to-yellow-500",
-              Research: "hover:from-teal-500 hover:to-cyan-600",
-              Achievements: "hover:from-lime-500 hover:to-green-600",
-              Join: "hover:from-fuchsia-500 hover:to-purple-600",
-              Contact: "hover:from-slate-700 hover:to-slate-900",
-              Login: "hover:from-slate-500 hover:to-blue-700",
-            };
+      <nav className="w-full bg-white/70 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
+        {/* Desktop */}
+        <div className="hidden md:flex justify-center items-center px-8 py-6">
+          <div className="flex gap-2 group/nav">
+            {navItems.map((item) => {
+              const gradients = {
+                Home: "hover:from-emerald-500 hover:to-emerald-600",
+                About: "hover:from-blue-500 hover:to-indigo-500",
+                Activities: "hover:from-orange-400 hover:to-pink-500",
+                Events: "hover:from-purple-500 hover:to-violet-600",
+                Leadership: "hover:from-rose-500 hover:to-red-600",
+                Gallery: "hover:from-amber-400 hover:to-yellow-500",
+                Research: "hover:from-teal-500 hover:to-cyan-600",
+                Achievements: "hover:from-lime-500 hover:to-green-600",
+                Join: "hover:from-fuchsia-500 hover:to-purple-600",
+                Contact: "hover:from-slate-700 hover:to-slate-900",
+                Login: "hover:from-slate-500 hover:to-blue-700",
+              };
 
-            return (
-              <button
-                key={item}
-                onClick={() => setActiveTab(item)}
-                className={`px-6 py-3 rounded-full transition-all duration-300 text-sm font-extrabold tracking-wide 
-                  ${
-                    activeTab === item
-                      ? "text-white bg-gradient-to-r from-slate-400 to-slate-600"
-                      : `text-slate-600 hover:text-white bg-transparent ${
-                          gradients[item as keyof typeof gradients] ||
-                          "hover:from-slate-500 hover:to-slate-600"
-                        } hover:bg-gradient-to-r`
-                  }`}
-              >
-                {item}
-              </button>
-            );
-          })}
+              return (
+                <button
+                  key={item}
+                  onClick={() => setActiveTab(item)}
+                  className={`px-6 py-3 rounded-full transition-all duration-300 text-sm font-extrabold tracking-wide 
+                    ${
+                      activeTab === item
+                        ? "text-white bg-gradient-to-r from-slate-400 to-slate-600"
+                        : `text-slate-600 hover:text-white bg-transparent ${
+                            gradients[item as keyof typeof gradients] ||
+                            "hover:from-slate-500 hover:to-slate-600"
+                          } hover:bg-gradient-to-r`
+                    }`}
+                >
+                  {item}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Mobile: hamburger + dropdown */}
+        <div className="md:hidden flex items-center justify-between px-4 py-4">
+          <button
+            type="button"
+            aria-label="Open navigation"
+            className="p-2 rounded-lg bg-white/60 hover:bg-white transition-colors border border-slate-100"
+            onClick={() => {
+              const el = document.getElementById("mobile-nav");
+              if (!el) return;
+              const open = el.getAttribute("data-open") === "true";
+              el.setAttribute("data-open", open ? "false" : "true");
+            }}
+          >
+            <span className="block w-5 h-[2px] bg-slate-800 mb-1 rounded-full" />
+            <span className="block w-5 h-[2px] bg-slate-800 mb-1 rounded-full" />
+            <span className="block w-5 h-[2px] bg-slate-800 rounded-full" />
+          </button>
+
+          <div className="text-xs font-extrabold tracking-widest text-slate-700 px-2">
+            {activeTab}
+          </div>
+
+          <div className="w-9" />
+        </div>
+
+        <div
+          id="mobile-nav"
+          data-open="false"
+          className="md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out max-h-0"
+        >
+          <div className="px-4 pb-4">
+            <div className="flex flex-col gap-2">
+              {navItems.map((item) => {
+                const gradients = {
+                  Home: "hover:from-emerald-500 hover:to-emerald-600",
+                  About: "hover:from-blue-500 hover:to-indigo-500",
+                  Activities: "hover:from-orange-400 hover:to-pink-500",
+                  Events: "hover:from-purple-500 hover:to-violet-600",
+                  Leadership: "hover:from-rose-500 hover:to-red-600",
+                  Gallery: "hover:from-amber-400 hover:to-yellow-500",
+                  Research: "hover:from-teal-500 hover:to-cyan-600",
+                  Achievements: "hover:from-lime-500 hover:to-green-600",
+                  Join: "hover:from-fuchsia-500 hover:to-purple-600",
+                  Contact: "hover:from-slate-700 hover:to-slate-900",
+                  Login: "hover:from-slate-500 hover:to-blue-700",
+                };
+
+                return (
+                  <button
+                    key={item}
+                    onClick={() => {
+                      setActiveTab(item);
+                      const el = document.getElementById("mobile-nav");
+                      if (!el) return;
+                      el.setAttribute("data-open", "false");
+                    }}
+                    className={`w-full text-left px-5 py-3 rounded-xl transition-all duration-300 text-sm font-extrabold tracking-wide border border-slate-100
+                      ${
+                        activeTab === item
+                          ? "text-white bg-gradient-to-r from-slate-400 to-slate-600 border-transparent"
+                          : `text-slate-700 hover:text-white bg-white hover:bg-gradient-to-r ${
+                              gradients[item as keyof typeof gradients] ||
+                              "hover:from-slate-500 hover:to-slate-600"
+                            }`
+                      }`}
+                  >
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </nav>
+
+      {/* Toggle mobile nav max-height (imperative to avoid extra state) */}
+      <style jsx>{`
+        #mobile-nav[data-open="true"] {
+          max-height: 420px;
+        }
+      `}</style>
 
       {/* DYNAMIC TAB CONTROLLER */}
 

@@ -1,0 +1,6 @@
+- [ ] Identify mobile issues (viewport meta, overflow, fixed widths, nav button wrapping)
+- [ ] Update app/layout.tsx with proper viewport meta tag (mobile scale)
+- [ ] Update page layout styles to avoid horizontal overflow on small screens
+- [ ] Ensure images scale responsively and don’t force width (Logo container sizing)
+- [ ] Verify by running dev build/lint
+- [ ] (Optional) Add responsive nav behavior (wrap or scroll) if still cramped
