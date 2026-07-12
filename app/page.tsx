@@ -1,7 +1,439 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
+
+function FormPillButton({
+  label,
+  active,
+  onClick,
+  className,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        className ||
+        `px-4 py-2 text-xs font-extrabold rounded-xl transition-all shadow-sm border border-slate-200/70
+        bg-gradient-to-r from-slate-200 via-slate-100 to-white hover:from-slate-300 hover:via-slate-150 hover:to-white text-slate-900`
+      }
+      style={
+        active
+          ? {
+              backgroundImage:
+                "linear-gradient(90deg, #cbd5e1 0%, #f8fafc 50%, #94a3b8 100%)",
+            }
+          : undefined
+      }
+    >
+      {label}
+    </button>
+  );
+}
+
+type MemberType = "G.M" | "E.M" | "Core";
+
+type MemberRecord = { id: string; password: string; memberType: MemberType };
+
+function AdminPassForm({
+  ADMIN_PASS,
+  onSuccess,
+  onBack,
+}: {
+  ADMIN_PASS: string;
+  onSuccess: () => void;
+  onBack: () => void;
+}) {
+  const [pass, setPass] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setError(null);
+        if (pass !== ADMIN_PASS) {
+          setError("Incorrect Password");
+          return;
+        }
+        onSuccess();
+      }}
+    >
+      <input
+        type="password"
+        value={pass}
+        onChange={(e) => setPass(e.target.value)}
+        placeholder="Admin Password"
+        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+      />
+      {error && (
+        <div className="text-[11px] font-bold text-red-600">{error}</div>
+      )}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
+        >
+          Back
+        </button>
+        <button
+          type="submit"
+          className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
+        >
+          Enter Admin
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function MemberGateForm({
+  members,
+  onSuccess,
+  onBack,
+}: {
+  members: MemberRecord[];
+  onSuccess: (memberId: string) => void;
+  onBack: () => void;
+}) {
+  const [formType, setFormType] = useState<MemberType>("Core");
+  const [coreNum, setCoreNum] = useState("000");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const formId = useMemo(() => {
+    if (formType === "Core") return `Core#${coreNum}`;
+    return `${formType}#000`;
+  }, [formType, coreNum]);
+
+  const normalizedMembers = useMemo(() => {
+    return members.map((m) => ({
+      ...m,
+      id: String(m.id).trim(),
+      password: String(m.password),
+    }));
+  }, [members]);
+
+  return (
+    <form
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setError(null);
+
+        const match = normalizedMembers.find((m) => m.id === formId);
+        if (!match) {
+          setError("Incorrect Form Id");
+          return;
+        }
+        if (match.password !== password) {
+          setError("Incorrect Password");
+          return;
+        }
+        onSuccess(match.id);
+      }}
+    >
+      <div className="flex flex-wrap gap-2">
+        <FormPillButton
+          label="G.M"
+          active={formType === "G.M"}
+          onClick={() => setFormType("G.M")}
+        />
+        <FormPillButton
+          label="E.M"
+          active={formType === "E.M"}
+          onClick={() => setFormType("E.M")}
+        />
+        <FormPillButton
+          label="Core"
+          active={formType === "Core"}
+          onClick={() => setFormType("Core")}
+        />
+      </div>
+
+      {formType === "Core" ? (
+        <input
+          inputMode="numeric"
+          value={coreNum}
+          onChange={(e) => {
+            const digits = e.target.value.replace(/\D/g, "");
+            const trimmed = digits.slice(0, 3);
+            setCoreNum(trimmed.padStart(3, "0"));
+          }}
+          placeholder="Core number"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+      ) : (
+        <div className="text-[11px] text-slate-500 font-medium">
+          Form ID will use <span className="font-bold">#000</span>
+        </div>
+      )}
+
+      <input
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        type="password"
+        placeholder="Password"
+        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+      />
+
+      <div className="text-[11px] font-bold text-slate-700">
+        Form ID: <span className="text-slate-950">{formId}</span>
+      </div>
+
+      {error && (
+        <div className="text-[11px] font-bold text-red-600">{error}</div>
+      )}
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
+        >
+          Back
+        </button>
+        <button
+          type="submit"
+          className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
+        >
+          Enter
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function AdminPanelForm({
+  members,
+  setMembers,
+  onLogout,
+}: {
+  members: MemberRecord[];
+  setMembers: React.Dispatch<React.SetStateAction<MemberRecord[]>>;
+  onLogout: () => void;
+}) {
+  const [tab, setTab] = useState<"Information" | "Members">("Information");
+  const [memberType, setMemberType] = useState<MemberType>("Core");
+  const [coreNum, setCoreNum] = useState("000");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const formId = useMemo(() => {
+    if (memberType === "Core") return `Core#${coreNum}`;
+    return `${memberType}#000`;
+  }, [memberType, coreNum]);
+
+  return (
+    <div className="py-10 px-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <div className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 font-mono">
+              ADMIN PANEL
+            </div>
+            <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1">
+              Information
+            </h2>
+            <p className="text-xs text-slate-400 mt-2 font-medium">
+              Add member Form ID and password.
+            </p>
+          </div>
+
+          <button
+            onClick={onLogout}
+            className="px-4 py-2 bg-slate-950 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-sm"
+          >
+            Logout
+          </button>
+        </div>
+
+        <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-6">
+          <div className="flex gap-3 mb-6">
+            <button
+              type="button"
+              onClick={() => setTab("Information")}
+              className={
+                tab === "Information"
+                  ? "px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold"
+                  : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold"
+              }
+            >
+              Information
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("Members")}
+              className={
+                tab === "Members"
+                  ? "px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold"
+                  : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold"
+              }
+            >
+              Members
+            </button>
+          </div>
+
+          {tab === "Information" ? (
+            <form
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setError(null);
+
+                if (!password.trim()) {
+                  setError("Password is required");
+                  return;
+                }
+
+                // Upsert
+                setMembers((prev) => {
+                  const exists = prev.some((m) => m.id === formId);
+                  if (exists) {
+                    return prev.map((m) =>
+                      m.id === formId
+                        ? { ...m, password: password.trim(), memberType }
+                        : m,
+                    );
+                  }
+                  return [
+                    ...prev,
+                    { id: formId, password: password.trim(), memberType },
+                  ];
+                });
+
+                setPassword("");
+                setCoreNum("000");
+                setMemberType("Core");
+              }}
+            >
+              <div className="md:col-span-2">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Select Form
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <FormPillButton
+                    label="G.M"
+                    active={memberType === "G.M"}
+                    onClick={() => setMemberType("G.M")}
+                  />
+                  <FormPillButton
+                    label="E.M"
+                    active={memberType === "E.M"}
+                    onClick={() => setMemberType("E.M")}
+                  />
+                  <FormPillButton
+                    label="Core"
+                    active={memberType === "Core"}
+                    onClick={() => setMemberType("Core")}
+                  />
+                </div>
+              </div>
+
+              {memberType === "Core" ? (
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    Core number (#000)
+                  </div>
+                  <input
+                    inputMode="numeric"
+                    value={coreNum}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/\D/g, "");
+                      const trimmed = digits.slice(0, 3);
+                      setCoreNum(trimmed.padStart(3, "0"));
+                    }}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                    placeholder="000"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                    Fixed suffix
+                  </div>
+                  <div className="px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700">
+                    #000
+                  </div>
+                </div>
+              )}
+
+              <div className="md:col-span-2">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Password
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  placeholder="Set member password"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="text-[11px] font-bold text-slate-700 mb-2">
+                  Will save as: <span className="text-slate-950">{formId}</span>
+                </div>
+                {error && (
+                  <div className="text-[11px] font-bold text-red-600 mb-3">
+                    {error}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  className="w-full px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold rounded-xl hover:opacity-95 transition-all shadow-sm"
+                >
+                  Add / Update Member
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div>
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                Members stored (session only)
+              </div>
+              <div className="space-y-2">
+                {members.length === 0 ? (
+                  <div className="text-xs text-slate-500 font-medium">
+                    No members added yet.
+                  </div>
+                ) : (
+                  members.map((m) => (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-slate-100 bg-white"
+                    >
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">
+                          {m.id}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-bold">
+                          {m.memberType}
+                        </div>
+                      </div>
+                      <div className="text-[11px] font-bold text-slate-700">
+                        ••••••
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Data Configurations
 const coreTeam = [
@@ -283,6 +715,20 @@ export default function AppRouter() {
   const [activeTab, setActiveTab] = useState("Home");
   const [openFaq, setOpenFaq] = useState<number | null>(null); // FAQ open index
 
+  // Auth / gating
+  type MemberType = "G.M" | "E.M" | "Core";
+  type MemberRecord = { id: string; password: string; memberType: MemberType };
+
+  // Stored only in-memory (no backend). Added via Admin panel.
+  const [members, setMembers] = useState<MemberRecord[]>([]);
+  const [authedMemberId, setAuthedMemberId] = useState<string | null>(null);
+  const [authedAdmin, setAuthedAdmin] = useState(false);
+
+  // Entry screen: choose who to login as.
+  const [authMode, setAuthMode] = useState<"member" | "admin" | null>(null);
+
+  const ADMIN_PASS = "123";
+
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans relative overflow-x-hidden selection:bg-emerald-100">
       {/* Navigation ... */}
@@ -415,33 +861,119 @@ export default function AppRouter() {
 
       {/* DYNAMIC TAB CONTROLLER */}
 
-      {activeTab === "Login" && (
-        <div className="flex justify-center items-center py-20 px-6">
-          <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm">
-            <h2 className="text-2xl font-black text-slate-900 mb-6 text-center">
-              Member Login
+      {/* Initial login options (shown before the whole website) */}
+      {authedMemberId === null && !authedAdmin && authMode === null && (
+        <div className="flex flex-col items-center justify-center py-16 px-6">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-md">
+            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
+              Login Options
             </h2>
-            <form className="flex flex-col gap-4">
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
+            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
+              Choose your access type to continue.
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
               <button
-                type="submit"
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
+                onClick={() => setAuthMode("member")}
+                className="px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-950 hover:text-white transition-all"
               >
-                Sign In
+                Member Login
               </button>
-            </form>
+              <button
+                onClick={() => setAuthMode("admin")}
+                className="px-5 py-3 bg-slate-950 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all"
+              >
+                Admin Login
+              </button>
+            </div>
           </div>
         </div>
       )}
+
+      {/* Admin login */}
+      {authMode === "admin" && !authedAdmin && (
+        <div className="flex justify-center items-center py-20 px-6">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
+            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
+              Admin Login
+            </h2>
+            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
+              Basic admin pass: <span className="font-bold">123</span>
+            </p>
+
+            <AdminPassForm
+              ADMIN_PASS={ADMIN_PASS}
+              onSuccess={() => {
+                setAuthedAdmin(true);
+                setAuthMode(null);
+                setActiveTab("Home");
+              }}
+              onBack={() => setAuthMode(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Member login */}
+      {authMode === "member" && authedMemberId === null && !authedAdmin && (
+        <div className="flex justify-center items-center py-20 px-6">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
+            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
+              Member Login
+            </h2>
+            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
+              Enter Form ID and Password given by admin.
+            </p>
+
+            <MemberGateForm
+              members={members}
+              onSuccess={(memberId) => {
+                setAuthedMemberId(memberId);
+                setAuthMode(null);
+                setActiveTab("Home");
+              }}
+              onBack={() => setAuthMode(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Admin panel tab */}
+      {authedAdmin && activeTab === "Admin" && (
+        <AdminPanelForm
+          members={members}
+          setMembers={setMembers}
+          onLogout={() => {
+            setAuthedAdmin(false);
+            setAuthedMemberId(null);
+            setAuthMode(null);
+            setActiveTab("Home");
+          }}
+        />
+      )}
+
+      {/* Gated website: show tabs only after member/admin login */}
+      {authedMemberId === null && !authedAdmin && <div className="hidden" />}
+
+      {authedMemberId !== null || authedAdmin ? (
+        <>
+          {activeTab === "Login" && (
+            <div className="flex justify-center items-center py-20 px-6">
+              <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm">
+                <h2 className="text-2xl font-black text-slate-900 mb-6 text-center">
+                  Member Login
+                </h2>
+                <button
+                  onClick={() => setAuthMode("member")}
+                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
+                >
+                  Open Member Login
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      ) : null}
 
       {/* 1. HOME TAB */}
       {activeTab === "Home" && (
