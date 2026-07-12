@@ -257,6 +257,8 @@ export default function AppRouter() {
 
   </div>
 </section>
+  </div>
+)}
 
       {/* 2. ABOUT TAB */}
       {activeTab === 'About' && (
