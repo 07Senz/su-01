@@ -223,8 +223,9 @@ export default function AppRouter() {
 {/* Glassmorphism Metrics Banner */}
 {/* ADDED ID BELOW SO THE SCROLL FUNCTION WORKS */}
 <section id="metrics-section" className="max-w-5xl mx-auto px-6 py-10 mt-10 scroll-mt-20">
-  <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-2 md:grid-cols-6 gap-6 text-center">
-    <div>
+  <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
       <h3 className="text-2xl font-black text-[#0b1b3d]">15+</h3>
       <p className="text-[10px] font-bold tracking-wider text-slate-600 uppercase mt-0.5">Members</p>
     </div>
@@ -258,8 +259,9 @@ export default function AppRouter() {
         <section className="py-16 max-w-4xl mx-auto px-6">
           <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 font-mono">Our Vision</span>
           <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1 mb-6">A society that grows leaders — not just members.</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-xs text-slate-600 leading-relaxed font-medium mb-12">
+<div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
             <div>
               <p>We help students learn new skills, build confidence, create professional habits, and foster positive change through structured group activities, sports, research, networking, and leadership programs.</p>
             </div>
@@ -275,8 +277,10 @@ export default function AppRouter() {
           <div className="border-t border-slate-100 pt-12">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CORE VALUES</span>
             <h3 className="text-xl font-bold text-slate-950 mt-1 mb-6">What we stand for</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {["Leadership", "Innovation", "Professionalism", "Integrity", "Collaboration", "Growth"].map((val) => (
+  <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+                       {["Leadership", "Innovation", "Professionalism", "Integrity", "Collaboration", "Growth"].map((val) => (
                 <div key={val} className="p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
                   <h4 className="font-bold text-slate-900 text-xs mb-1">✦ {val}</h4>
                   <p className="text-[11px] text-slate-400 leading-normal">Upholding highest structural metrics daily.</p>
@@ -296,8 +300,10 @@ export default function AppRouter() {
             <p className="text-xs text-slate-400 mt-2 font-medium">From skill workshops to research to sports — pick the paths that match your ambition.</p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {activitiesList.map((item, index) => (
+         <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+           {activitiesList.map((item, index) => (
               <div key={index} className="p-5 border border-slate-100 rounded-xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between">
                 <div>
                   <h3 className="font-bold text-slate-900 text-xs mb-1">{item.title}</h3>
@@ -346,8 +352,10 @@ export default function AppRouter() {
 
           <div className="border-t border-slate-100 pt-10">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">PAST EVENTS</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {pastEvents.map((pe, idx) => (
+       <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+            {pastEvents.map((pe, idx) => (
                 <div key={idx} className="p-4 border border-slate-100 bg-slate-50/50 rounded-xl">
                   <span className="text-[9px] font-bold text-slate-400 block mb-0.5">{pe.date}</span>
                   <h4 className="font-bold text-slate-900 text-xs mb-1">{pe.title}</h4>
@@ -369,8 +377,10 @@ export default function AppRouter() {
             <p className="text-xs text-slate-400 mt-2 font-medium">Led by students, for students. Shaping the vision, direction, and daily life of the society.</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {coreTeam.map((member, index) => (
+     <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+          {coreTeam.map((member, index) => (
               <div key={index} className="p-5 border border-slate-100 rounded-xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between group">
                 <div>
                   <div className="flex justify-between items-start mb-3">
@@ -407,8 +417,10 @@ export default function AppRouter() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((img) => (
+      <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+       {[1, 2, 3, 4, 5, 6, 7, 8].map((img) => (
               <div key={img} className="aspect-square bg-slate-50 border border-slate-100 rounded-xl relative overflow-hidden group cursor-pointer shadow-inner flex items-center justify-center">
                 <span className="text-slate-300 text-xs font-semibold group-hover:text-slate-500 transition-colors">Capture Asset #{img}</span>
                 <div className="absolute inset-0 bg-slate-955/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
@@ -435,8 +447,10 @@ export default function AppRouter() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {researchPapers.map((paper, idx) => (
+    <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
+          {researchPapers.map((paper, idx) => (
               <div key={idx} className="p-5 border border-slate-100 bg-white rounded-xl shadow-sm hover:border-slate-200 transition-all flex flex-col justify-between group cursor-pointer">
                 <div>
                   <span className="text-[9px] font-bold text-slate-400 block mb-1">{paper.category}</span>
@@ -484,8 +498,9 @@ export default function AppRouter() {
             <p className="text-xs text-slate-400 mt-2 font-medium">Join a community of driven students building skills, lead network, and grow.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-            <div>
+   <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+</div>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-4">REQUIREMENTS</span>
               <ul className="space-y-2 text-xs text-slate-600 font-medium mb-8">
                 <li className="flex items-center gap-2">✓ Current student at Royal University of Dhaka</li>
@@ -553,8 +568,9 @@ export default function AppRouter() {
             <p className="text-xs text-slate-400 mt-1 font-medium">Questions, collaborations, or media enquiries — we're here.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div className="space-y-6">
+      <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
+  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
+          <div className="space-y-6">
               <div>
                 <span className="text-[9px] font-bold text-slate-400 uppercase block mb-1">EMAIL</span>
                 <a href="mailto:rudstepup@gmail.com" className="text-xs font-bold text-emerald-700 hover:underline">rudstepup@gmail.com</a>
