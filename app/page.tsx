@@ -1044,12 +1044,13 @@ export default function AppRouter() {
           </div>
         </div>
 
-        {/* Mobile: hamburger + dropdown */}
+        {/* Mobile + Tablet: hamburger + dropdown */}
         <div className="md:hidden flex items-center justify-between px-4 py-4">
           <button
             type="button"
-            aria-label="Open navigation"
-            className="p-2 rounded-lg bg-white/60 hover:bg-white transition-colors border border-slate-100"
+            aria-label="Toggle navigation"
+            aria-expanded={"false"}
+            className="group relative w-11 h-11 flex items-center justify-center rounded-2xl border border-white/50 bg-white/30 backdrop-blur-xl shadow-[0_10px_30px_rgba(2,6,23,0.12)] hover:bg-white/40 transition-all"
             onClick={() => {
               const el = document.getElementById("mobile-nav");
               if (!el) return;
@@ -1057,16 +1058,19 @@ export default function AppRouter() {
               el.setAttribute("data-open", open ? "false" : "true");
             }}
           >
-            <span className="block w-5 h-[2px] bg-slate-800 mb-1 rounded-full" />
-            <span className="block w-5 h-[2px] bg-slate-800 mb-1 rounded-full" />
-            <span className="block w-5 h-[2px] bg-slate-800 rounded-full" />
+            {/* metalic/glassy 3-line icon */}
+            <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/50 to-transparent opacity-60 pointer-events-none" />
+            <span className="block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm group-hover:bg-slate-900" />
+            <span className="absolute block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm top-[14px] group-hover:bg-slate-900" />
+            <span className="absolute block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm top-[28px] group-hover:bg-slate-900" />
           </button>
 
           <div className="text-xs font-extrabold tracking-widest text-slate-700 px-2">
             {activeTab}
           </div>
 
-          <div className="w-9" />
+          {/* right spacer */}
+          <div className="w-11" />
         </div>
 
         <div
@@ -1091,6 +1095,8 @@ export default function AppRouter() {
                   Login: "hover:from-slate-500 hover:to-blue-700",
                 };
 
+                const isActive = activeTab === item;
+
                 return (
                   <button
                     key={item}
@@ -1110,7 +1116,14 @@ export default function AppRouter() {
                             }`
                       }`}
                   >
-                    {item}
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{item}</span>
+                      {isActive && (
+                        <span className="text-[10px] font-extrabold tracking-wider text-white/90 bg-slate-900 rounded-full px-2 py-1 shadow-sm">
+                          Active
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}
