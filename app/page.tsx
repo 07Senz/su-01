@@ -861,15 +861,15 @@ export default function AppRouter() {
 
       {/* DYNAMIC TAB CONTROLLER */}
 
-      {/* Initial login options (shown before the whole website) */}
+      {/* LOGIN SYSTEM (only here; Home must not show login UI) */}
       {authedMemberId === null && !authedAdmin && authMode === null && (
         <div className="flex flex-col items-center justify-center py-16 px-6">
           <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-md">
             <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
-              Login Options
+              Login
             </h2>
             <p className="text-xs text-slate-500 text-center mb-6 font-medium">
-              Choose your access type to continue.
+              Choose access.
             </p>
 
             <div className="grid grid-cols-1 gap-3">
@@ -890,23 +890,18 @@ export default function AppRouter() {
         </div>
       )}
 
-      {/* Admin login */}
       {authMode === "admin" && !authedAdmin && (
         <div className="flex justify-center items-center py-20 px-6">
           <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
             <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
               Admin Login
             </h2>
-            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
-              Basic admin pass: <span className="font-bold">123</span>
-            </p>
-
             <AdminPassForm
               ADMIN_PASS={ADMIN_PASS}
               onSuccess={() => {
                 setAuthedAdmin(true);
                 setAuthMode(null);
-                setActiveTab("Home");
+                setActiveTab("Admin");
               }}
               onBack={() => setAuthMode(null)}
             />
@@ -914,17 +909,12 @@ export default function AppRouter() {
         </div>
       )}
 
-      {/* Member login */}
       {authMode === "member" && authedMemberId === null && !authedAdmin && (
         <div className="flex justify-center items-center py-20 px-6">
           <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
             <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
               Member Login
             </h2>
-            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
-              Enter Form ID and Password given by admin.
-            </p>
-
             <MemberGateForm
               members={members}
               onSuccess={(memberId) => {
@@ -938,7 +928,6 @@ export default function AppRouter() {
         </div>
       )}
 
-      {/* Admin panel tab */}
       {authedAdmin && activeTab === "Admin" && (
         <AdminPanelForm
           members={members}
@@ -952,28 +941,13 @@ export default function AppRouter() {
         />
       )}
 
-      {/* Gated website: show tabs only after member/admin login */}
+      {/* Gated website: show tabs only after member login */}
       {authedMemberId === null && !authedAdmin && <div className="hidden" />}
 
-      {authedMemberId !== null || authedAdmin ? (
-        <>
-          {activeTab === "Login" && (
-            <div className="flex justify-center items-center py-20 px-6">
-              <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm">
-                <h2 className="text-2xl font-black text-slate-900 mb-6 text-center">
-                  Member Login
-                </h2>
-                <button
-                  onClick={() => setAuthMode("member")}
-                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
-                >
-                  Open Member Login
-                </button>
-              </div>
-            </div>
-          )}
-        </>
-      ) : null}
+      {/* No extra Login UI in Home/nav after we implement authMode screens */}
+      {authedMemberId !== null && <>{/* MEMBER WEBSITE STARTS HERE */}</>}
+
+      {/* Admin panel is shown above. Member website below. */}
 
       {/* 1. HOME TAB */}
       {activeTab === "Home" && (
