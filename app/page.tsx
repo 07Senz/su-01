@@ -1772,10 +1772,6 @@ export default function AppRouter() {
                   Submit application
                 </button>
               </form>
-              <p className="text-[9px] text-center text-slate-400 mt-4 font-medium">
-                A working member portal with review and approval flows will be
-                enabled once Lovable Cloud is turned on.
-              </p>
             </div>
           </div>
         </section>
