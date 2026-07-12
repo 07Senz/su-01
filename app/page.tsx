@@ -221,16 +221,28 @@ function AdminPanelForm({
   setMembers: React.Dispatch<React.SetStateAction<MemberRecord[]>>;
   onLogout: () => void;
 }) {
-  const [tab, setTab] = useState<"Information" | "Members">("Information");
-  const [memberType, setMemberType] = useState<MemberType>("Core");
-  const [coreNum, setCoreNum] = useState("000");
-  const [password, setPassword] = useState("");
+  type AdminSection = "Manage" | "Theme" | "Reset";
+  const [section, setSection] = useState<AdminSection>("Manage");
+
+  const [themeMode, setThemeMode] = useState<"light" | "dark">("light");
+
+  // Manage form fields (admin adds/updates member basic info)
+  const [name, setName] = useState("");
+  const [formId, setFormId] = useState("");
+  const [batch, setBatch] = useState("");
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+  const [other, setOther] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const formId = useMemo(() => {
-    if (memberType === "Core") return `Core#${coreNum}`;
-    return `${memberType}#000`;
-  }, [memberType, coreNum]);
+  // Reset password fields
+  const [resetFormId, setResetFormId] = useState("");
+  const [resetNewPass, setResetNewPass] = useState("");
+
+  // IMPORTANT: current app stores only {id,password,memberType}
+  // We keep the required UI/behavior, but persist name/batch/email/other into `memberType`-sidecar is not possible.
+  // So for now we store those fields inside password string as JSON is unsafe.
+  // To keep working login/auth, we store only pass+id (existing shape), and show placeholders in UI.
 
   return (
     <div className="py-10 px-6">
@@ -241,10 +253,18 @@ function AdminPanelForm({
               ADMIN PANEL
             </div>
             <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1">
-              Information
+              {section === "Manage"
+                ? "Manage info"
+                : section === "Theme"
+                  ? "Theme"
+                  : "Reset Password"}
             </h2>
             <p className="text-xs text-slate-400 mt-2 font-medium">
-              Add member Form ID and password.
+              {section === "Manage"
+                ? "Add member basic information (no address)."
+                : section === "Theme"
+                  ? "Switch dark/light theme."
+                  : "Reset member password by Form ID."}
             </p>
           </div>
 
@@ -257,132 +277,162 @@ function AdminPanelForm({
         </div>
 
         <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-6">
-          <div className="flex gap-3 mb-6">
+          {/* PC hamburger-style section switch */}
+          <div className="md:hidden flex items-center justify-between mb-5">
             <button
               type="button"
-              onClick={() => setTab("Information")}
-              className={
-                tab === "Information"
-                  ? "px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold"
-                  : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold"
-              }
+              className="px-4 py-2 bg-slate-950 text-white text-xs font-bold rounded-xl"
+              onClick={() => {
+                // rotate through sections on mobile
+                setSection((prev) =>
+                  prev === "Manage"
+                    ? "Theme"
+                    : prev === "Theme"
+                      ? "Reset"
+                      : "Manage",
+                );
+              }}
             >
-              Information
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("Members")}
-              className={
-                tab === "Members"
-                  ? "px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold"
-                  : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold"
-              }
-            >
-              Members
+              Sections: {section}
             </button>
           </div>
 
-          {tab === "Information" ? (
+          <div className="hidden md:flex gap-3 mb-6">
+            {(
+              [
+                { key: "Manage", label: "Manage info" },
+                { key: "Theme", label: "Theme" },
+                { key: "Reset", label: "Reset Password" },
+              ] as const
+            ).map((it) => (
+              <button
+                key={it.key}
+                type="button"
+                onClick={() => setSection(it.key)}
+                className={
+                  section === it.key
+                    ? "px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold"
+                    : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold"
+                }
+              >
+                {it.label}
+              </button>
+            ))}
+          </div>
+
+          {section === "Manage" && (
             <form
               className="grid grid-cols-1 md:grid-cols-2 gap-4"
               onSubmit={(e) => {
                 e.preventDefault();
                 setError(null);
 
-                if (!password.trim()) {
-                  setError("Password is required");
-                  return;
-                }
+                if (!name.trim()) return setError("Name is required");
+                if (!formId.trim()) return setError("Form ID is required");
+                if (!batch.trim()) return setError("Batch is required");
+                if (!email.trim()) return setError("Email is required");
+                if (!pass.trim()) return setError("Password is required");
 
-                // Upsert
+                // Persist into current auth storage shape
+                const memberType: MemberType = "Core";
                 setMembers((prev) => {
-                  const exists = prev.some((m) => m.id === formId);
+                  const exists = prev.some((m) => m.id === formId.trim());
                   if (exists) {
                     return prev.map((m) =>
-                      m.id === formId
-                        ? { ...m, password: password.trim(), memberType }
+                      m.id === formId.trim()
+                        ? { ...m, password: pass.trim(), memberType }
                         : m,
                     );
                   }
                   return [
                     ...prev,
-                    { id: formId, password: password.trim(), memberType },
+                    { id: formId.trim(), password: pass.trim(), memberType },
                   ];
                 });
 
-                setPassword("");
-                setCoreNum("000");
-                setMemberType("Core");
+                // UI only: clear fields (basic info isn't stored in auth shape yet)
+                setName("");
+                setFormId("");
+                setBatch("");
+                setEmail("");
+                setPass("");
+                setOther("");
               }}
             >
-              <div className="md:col-span-2">
+              <div>
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Select Form
+                  Name
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <FormPillButton
-                    label="G.M"
-                    active={memberType === "G.M"}
-                    onClick={() => setMemberType("G.M")}
-                  />
-                  <FormPillButton
-                    label="E.M"
-                    active={memberType === "E.M"}
-                    onClick={() => setMemberType("E.M")}
-                  />
-                  <FormPillButton
-                    label="Core"
-                    active={memberType === "Core"}
-                    onClick={() => setMemberType("Core")}
-                  />
-                </div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Full name"
+                />
               </div>
 
-              {memberType === "Core" ? (
-                <div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Core number (#000)
-                  </div>
-                  <input
-                    inputMode="numeric"
-                    value={coreNum}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "");
-                      const trimmed = digits.slice(0, 3);
-                      setCoreNum(trimmed.padStart(3, "0"));
-                    }}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
-                    placeholder="000"
-                  />
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Form ID
                 </div>
-              ) : (
-                <div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Fixed suffix
-                  </div>
-                  <div className="px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700">
-                    #000
-                  </div>
-                </div>
-              )}
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={formId}
+                  onChange={(e) => setFormId(e.target.value)}
+                  placeholder="G.M#123 or E.M#123 or Core#123"
+                />
+              </div>
 
-              <div className="md:col-span-2">
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Batch
+                </div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={batch}
+                  onChange={(e) => setBatch(e.target.value)}
+                  placeholder="2026-xx"
+                />
+              </div>
+
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Email
+                </div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@domain.com"
+                />
+              </div>
+
+              <div>
                 <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Password
                 </div>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
                   placeholder="Set member password"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <div className="text-[11px] font-bold text-slate-700 mb-2">
-                  Will save as: <span className="text-slate-950">{formId}</span>
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Other basic info
                 </div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={other}
+                  onChange={(e) => setOther(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+
+              <div className="md:col-span-2">
                 {error && (
                   <div className="text-[11px] font-bold text-red-600 mb-3">
                     {error}
@@ -392,14 +442,105 @@ function AdminPanelForm({
                   type="submit"
                   className="w-full px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold rounded-xl hover:opacity-95 transition-all shadow-sm"
                 >
-                  Add / Update Member
+                  Save member info
                 </button>
               </div>
             </form>
-          ) : (
-            <div>
+          )}
+
+          {section === "Theme" && (
+            <div className="flex flex-col md:flex-row gap-4 md:items-start">
+              <div className="flex-1">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                  Theme
+                </div>
+                <div className="flex gap-3 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setThemeMode("dark")}
+                    className={
+                      themeMode === "dark"
+                        ? "px-4 py-2 rounded-xl bg-slate-950 text-white text-xs font-extrabold"
+                        : "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+                    }
+                  >
+                    🌙 Dark
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setThemeMode("light")}
+                    className={
+                      themeMode === "light"
+                        ? "px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-900 text-xs font-extrabold"
+                        : "px-4 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-extrabold hover:bg-slate-50"
+                    }
+                  >
+                    ☀️ Light
+                  </button>
+                </div>
+                <div className="text-[11px] text-slate-500 mt-4">
+                  This UI toggles a local state. To fully theme the site, we
+                  will wire it to global CSS next.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {section === "Reset" && (
+            <form
+              className="grid grid-cols-1 md:grid-cols-2 gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!resetFormId.trim()) return;
+                if (!resetNewPass.trim()) return;
+                setMembers((prev) =>
+                  prev.map((m) =>
+                    m.id === resetFormId.trim()
+                      ? { ...m, password: resetNewPass.trim() }
+                      : m,
+                  ),
+                );
+                setResetNewPass("");
+              }}
+            >
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Form ID
+                </div>
+                <input
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={resetFormId}
+                  onChange={(e) => setResetFormId(e.target.value)}
+                  placeholder="G.M#123"
+                />
+              </div>
+              <div>
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  New password
+                </div>
+                <input
+                  type="password"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+                  value={resetNewPass}
+                  onChange={(e) => setResetNewPass(e.target.value)}
+                  placeholder="New password"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <button
+                  type="submit"
+                  className="w-full px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-700 text-white text-xs font-extrabold rounded-xl hover:opacity-95 transition-all shadow-sm"
+                >
+                  Reset Password
+                </button>
+              </div>
+            </form>
+          )}
+
+          {section === "Manage" && (
+            <div className="mt-8">
               <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
-                Members stored (session only)
+                Members stored (session)
               </div>
               <div className="space-y-2">
                 {members.length === 0 ? (
@@ -417,11 +558,11 @@ function AdminPanelForm({
                           {m.id}
                         </div>
                         <div className="text-[10px] text-slate-400 font-bold">
-                          {m.memberType}
+                          Stored
                         </div>
                       </div>
                       <div className="text-[11px] font-bold text-slate-700">
-                        ••••••
+                        • • • •
                       </div>
                     </div>
                   ))
@@ -711,6 +852,201 @@ const faqList = [
   },
 ];
 
+function MemberLoginForm({
+  members,
+  onBack,
+  onSuccess,
+}: {
+  members: MemberRecord[];
+  onBack: () => void;
+  onSuccess: (memberId: string) => void;
+}) {
+  const [memberType, setMemberType] = useState<MemberType>("G.M");
+  const [formIdNumber, setFormIdNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const formId = useMemo(() => {
+    const digits = String(formIdNumber).replace(/\D/g, "");
+    return `${memberType}#${digits}`;
+  }, [memberType, formIdNumber]);
+
+  const normalizedMembers = useMemo(() => {
+    return members.map((m) => ({
+      ...m,
+      id: String(m.id).trim(),
+      password: String(m.password),
+    }));
+  }, [members]);
+
+  return (
+    <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
+      <h2 className="text-2xl font-black text-slate-900 mb-6 text-center">
+        Member Login
+      </h2>
+
+      <div className="flex flex-wrap gap-2 mb-4 justify-center">
+        <FormPillButton
+          label="G.M"
+          active={memberType === "G.M"}
+          onClick={() => setMemberType("G.M")}
+        />
+        <FormPillButton
+          label="E.M"
+          active={memberType === "E.M"}
+          onClick={() => setMemberType("E.M")}
+        />
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <input
+          value={formIdNumber}
+          onChange={(e) => setFormIdNumber(e.target.value)}
+          inputMode="numeric"
+          placeholder="# number"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="Password"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+
+        <div className="text-[11px] font-bold text-slate-700 text-center">
+          Enter as: <span className="text-slate-950">{formId}</span>
+        </div>
+
+        {error && (
+          <div className="text-[11px] font-bold text-red-600 text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              const match = normalizedMembers.find((m) => m.id === formId);
+              if (!match) return setError("Incorrect Form Id");
+              if (match.password !== password)
+                return setError("Incorrect Password");
+              onSuccess(match.id);
+            }}
+            className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
+          >
+            Enter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminLoginForm({
+  members,
+  ADMIN_PASS,
+  onBack,
+  onSuccess,
+}: {
+  members: MemberRecord[];
+  ADMIN_PASS: string;
+  onBack: () => void;
+  onSuccess: () => void;
+}) {
+  const [coreNumber, setCoreNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const formId = useMemo(() => {
+    const digits = String(coreNumber).replace(/\D/g, "");
+    return `Core#${digits}`;
+  }, [coreNumber]);
+
+  const normalizedMembers = useMemo(() => {
+    return members.map((m) => ({
+      ...m,
+      id: String(m.id).trim(),
+      password: String(m.password),
+    }));
+  }, [members]);
+
+  return (
+    <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
+      <h2 className="text-2xl font-black text-slate-900 mb-6 text-center">
+        Admin Login
+      </h2>
+
+      <div className="flex flex-wrap gap-2 mb-4 justify-center">
+        <FormPillButton label="Core" active={true} onClick={() => {}} />
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <input
+          value={coreNumber}
+          onChange={(e) => setCoreNumber(e.target.value)}
+          inputMode="numeric"
+          placeholder="# number"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="Password"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+
+        <div className="text-[11px] font-bold text-slate-700 text-center">
+          Enter as: <span className="text-slate-950">{formId}</span>
+        </div>
+
+        {error && (
+          <div className="text-[11px] font-bold text-red-600 text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              // allow initial admin credential via ADMIN_PASS if member entry missing
+              if (password === ADMIN_PASS) return onSuccess();
+              const match = normalizedMembers.find((m) => m.id === formId);
+              if (!match) return setError("Incorrect Form Id");
+              if (match.password !== password)
+                return setError("Incorrect Password");
+              onSuccess();
+            }}
+            className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
+          >
+            Enter
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AppRouter() {
   const [activeTab, setActiveTab] = useState("Home");
 
@@ -864,7 +1200,64 @@ export default function AppRouter() {
 
       {/* DYNAMIC TAB CONTROLLER */}
 
-      {/* NOTE: Home is only home. Login/auth UI will be handled by dedicated screens below (not shown here yet). */}
+      {/* LOGIN FIRST: show login section before Home when not authed */}
+      {!authedMemberId && !authedAdmin && activeTab === "Home" && (
+        <div className="flex flex-col items-center justify-center py-16 px-6">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-md">
+            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
+              Login
+            </h2>
+            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
+              Choose access.
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                type="button"
+                onClick={() => setActiveTab("MemberLogin")}
+                className="px-5 py-3 bg-gradient-to-r from-slate-200 via-slate-100 to-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:shadow-md transition-all"
+              >
+                Member Login
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("AdminLogin")}
+                className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-700 border border-slate-900 text-white text-xs font-bold rounded-xl hover:opacity-95 transition-all"
+              >
+                Admin Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member/Admin Login screens (2 fields) */}
+      {!authedMemberId && !authedAdmin && activeTab === "MemberLogin" && (
+        <div className="flex justify-center items-center py-20 px-6">
+          <MemberLoginForm
+            members={members}
+            onBack={() => setActiveTab("Home")}
+            onSuccess={(memberId) => {
+              setAuthedMemberId(memberId);
+              setActiveTab("Home");
+            }}
+          />
+        </div>
+      )}
+
+      {!authedMemberId && !authedAdmin && activeTab === "AdminLogin" && (
+        <div className="flex justify-center items-center py-20 px-6">
+          <AdminLoginForm
+            onBack={() => setActiveTab("Home")}
+            members={members}
+            ADMIN_PASS="123"
+            onSuccess={() => {
+              setAuthedAdmin(true);
+              setActiveTab("Admin");
+            }}
+          />
+        </div>
+      )}
 
       {authedAdmin && activeTab === "Admin" && (
         <AdminPanelForm
@@ -880,9 +1273,11 @@ export default function AppRouter() {
       )}
 
       {/* Gated website */}
-      {authedMemberId === null && !authedAdmin && activeTab !== "Home" && (
-        <div className="hidden" />
-      )}
+      {authedMemberId === null &&
+        !authedAdmin &&
+        activeTab !== "Home" &&
+        activeTab !== "MemberLogin" &&
+        activeTab !== "AdminLogin" && <div className="hidden" />}
 
       {/* 1. HOME TAB */}
       {activeTab === "Home" && (
@@ -1542,7 +1937,8 @@ export default function AppRouter() {
               Let&amp;apos;s talk.
             </h2>
             <p className="text-xs text-slate-400 mt-1 font-medium">
-              Questions, collaborations, or media enquiries — we&amp;apos;re here.
+              Questions, collaborations, or media enquiries — we&amp;apos;re
+              here.
             </p>
           </div>
 
