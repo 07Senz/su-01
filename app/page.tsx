@@ -41,60 +41,6 @@ type MemberType = "G.M" | "E.M" | "Core";
 
 type MemberRecord = { id: string; password: string; memberType: MemberType };
 
-function AdminPassForm({
-  ADMIN_PASS,
-  onSuccess,
-  onBack,
-}: {
-  ADMIN_PASS: string;
-  onSuccess: () => void;
-  onBack: () => void;
-}) {
-  const [pass, setPass] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <form
-      className="flex flex-col gap-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        setError(null);
-        if (pass !== ADMIN_PASS) {
-          setError("Incorrect Password");
-          return;
-        }
-        onSuccess();
-      }}
-    >
-      <input
-        type="password"
-        value={pass}
-        onChange={(e) => setPass(e.target.value)}
-        placeholder="Admin Password"
-        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
-      />
-      {error && (
-        <div className="text-[11px] font-bold text-red-600">{error}</div>
-      )}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
-        >
-          Back
-        </button>
-        <button
-          type="submit"
-          className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
-        >
-          Enter Admin
-        </button>
-      </div>
-    </form>
-  );
-}
-
 function MemberGateForm({
   members,
   onSuccess,
@@ -862,14 +808,7 @@ function MemberLoginForm({
   onSuccess: (memberId: string) => void;
 }) {
   const [memberType, setMemberType] = useState<MemberType>("G.M");
-  const [formIdNumber, setFormIdNumber] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-
-  const formId = useMemo(() => {
-    const digits = String(formIdNumber).replace(/\D/g, "");
-    return `${memberType}#${digits}`;
-  }, [memberType, formIdNumber]);
 
   const normalizedMembers = useMemo(() => {
     return members.map((m) => ({
@@ -899,24 +838,8 @@ function MemberLoginForm({
       </div>
 
       <div className="flex flex-col gap-3">
-        <input
-          value={formIdNumber}
-          onChange={(e) => setFormIdNumber(e.target.value)}
-          inputMode="numeric"
-          placeholder="# number"
-          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
-        />
-
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          placeholder="Password"
-          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
-        />
-
         <div className="text-[11px] font-bold text-slate-700 text-center">
-          Enter as: <span className="text-slate-950">{formId}</span>
+          Press <span className="text-slate-950">Enter</span> to login.
         </div>
 
         {error && (
@@ -937,10 +860,15 @@ function MemberLoginForm({
             type="button"
             onClick={() => {
               setError(null);
-              const match = normalizedMembers.find((m) => m.id === formId);
-              if (!match) return setError("Incorrect Form Id");
-              if (match.password !== password)
-                return setError("Incorrect Password");
+              if (normalizedMembers.length === 0)
+                return setError("No members added yet.");
+
+              const match = normalizedMembers.find(
+                (m) => m.memberType === memberType,
+              );
+              if (!match) return setError(`No ${memberType} member found.`);
+
+              // Per requirement: members don't type; just login button.
               onSuccess(match.id);
             }}
             className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
@@ -1199,37 +1127,6 @@ export default function AppRouter() {
       `}</style>
 
       {/* DYNAMIC TAB CONTROLLER */}
-
-      {/* LOGIN FIRST: show login section before Home when not authed */}
-      {!authedMemberId && !authedAdmin && activeTab === "Home" && (
-        <div className="flex flex-col items-center justify-center py-16 px-6">
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-md">
-            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
-              Login
-            </h2>
-            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
-              Choose access.
-            </p>
-
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                type="button"
-                onClick={() => setActiveTab("MemberLogin")}
-                className="px-5 py-3 bg-gradient-to-r from-slate-200 via-slate-100 to-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:shadow-md transition-all"
-              >
-                Member Login
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("AdminLogin")}
-                className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-700 border border-slate-900 text-white text-xs font-bold rounded-xl hover:opacity-95 transition-all"
-              >
-                Admin Login
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Member/Admin Login screens (2 fields) */}
       {!authedMemberId && !authedAdmin && activeTab === "MemberLogin" && (
