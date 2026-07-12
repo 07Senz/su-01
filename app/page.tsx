@@ -713,6 +713,9 @@ const faqList = [
 
 export default function AppRouter() {
   const [activeTab, setActiveTab] = useState("Home");
+
+  const [authedAdminId, setAuthedAdminId] = useState<string | null>(null);
+
   const [openFaq, setOpenFaq] = useState<number | null>(null); // FAQ open index
 
   // Auth / gating
@@ -861,72 +864,7 @@ export default function AppRouter() {
 
       {/* DYNAMIC TAB CONTROLLER */}
 
-      {/* LOGIN SYSTEM (only here; Home must not show login UI) */}
-      {authedMemberId === null && !authedAdmin && authMode === null && (
-        <div className="flex flex-col items-center justify-center py-16 px-6">
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-md">
-            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
-              Login
-            </h2>
-            <p className="text-xs text-slate-500 text-center mb-6 font-medium">
-              Choose access.
-            </p>
-
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={() => setAuthMode("member")}
-                className="px-5 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-950 hover:text-white transition-all"
-              >
-                Member Login
-              </button>
-              <button
-                onClick={() => setAuthMode("admin")}
-                className="px-5 py-3 bg-slate-950 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all"
-              >
-                Admin Login
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {authMode === "admin" && !authedAdmin && (
-        <div className="flex justify-center items-center py-20 px-6">
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
-            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
-              Admin Login
-            </h2>
-            <AdminPassForm
-              ADMIN_PASS={ADMIN_PASS}
-              onSuccess={() => {
-                setAuthedAdmin(true);
-                setAuthMode(null);
-                setActiveTab("Admin");
-              }}
-              onBack={() => setAuthMode(null)}
-            />
-          </div>
-        </div>
-      )}
-
-      {authMode === "member" && authedMemberId === null && !authedAdmin && (
-        <div className="flex justify-center items-center py-20 px-6">
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm">
-            <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
-              Member Login
-            </h2>
-            <MemberGateForm
-              members={members}
-              onSuccess={(memberId) => {
-                setAuthedMemberId(memberId);
-                setAuthMode(null);
-                setActiveTab("Home");
-              }}
-              onBack={() => setAuthMode(null)}
-            />
-          </div>
-        </div>
-      )}
+      {/* NOTE: Home is only home. Login/auth UI will be handled by dedicated screens below (not shown here yet). */}
 
       {authedAdmin && activeTab === "Admin" && (
         <AdminPanelForm
@@ -941,13 +879,10 @@ export default function AppRouter() {
         />
       )}
 
-      {/* Gated website: show tabs only after member login */}
-      {authedMemberId === null && !authedAdmin && <div className="hidden" />}
-
-      {/* No extra Login UI in Home/nav after we implement authMode screens */}
-      {authedMemberId !== null && <>{/* MEMBER WEBSITE STARTS HERE */}</>}
-
-      {/* Admin panel is shown above. Member website below. */}
+      {/* Gated website */}
+      {authedMemberId === null && !authedAdmin && activeTab !== "Home" && (
+        <div className="hidden" />
+      )}
 
       {/* 1. HOME TAB */}
       {activeTab === "Home" && (
@@ -995,14 +930,6 @@ export default function AppRouter() {
                 className="px-5 py-2.5 bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-full hover:bg-slate-900 hover:text-white transition-all"
               >
                 Explore Activities
-              </button>
-
-              {/* Button 3: Login */}
-              <button
-                onClick={() => setActiveTab("Login")}
-                className="px-5 py-2.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-full hover:bg-slate-900 hover:text-white transition-all"
-              >
-                Login
               </button>
             </div>
 
@@ -1193,7 +1120,7 @@ export default function AppRouter() {
                 EVENTS
               </span>
               <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1">
-                What&apos;s happening at RUD StepUp.
+                What’s happening at RUD StepUp.
               </h2>
             </div>
             <button className="px-3 py-1.5 bg-slate-50 border border-slate-200 text-slate-600 text-xs font-semibold rounded-full hover:bg-slate-100 transition-all">
@@ -1612,10 +1539,10 @@ export default function AppRouter() {
               CONTACT
             </span>
             <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1">
-              Let's talk.
+              Let&amp;apos;s talk.
             </h2>
             <p className="text-xs text-slate-400 mt-1 font-medium">
-              Questions, collaborations, or media enquiries — we're here.
+              Questions, collaborations, or media enquiries — we&amp;apos;re here.
             </p>
           </div>
 
