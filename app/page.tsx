@@ -1029,7 +1029,18 @@ export default function AppRouter() {
             {activeTab}
           </div>
 
-          <div className="w-11" />
+          <button
+            type="button"
+            onClick={() => setActiveTab("Login")}
+            className={`px-4 h-11 flex items-center justify-center rounded-2xl text-xs font-extrabold tracking-wide transition-all shadow-sm
+              ${
+                activeTab === "Login"
+                  ? "text-white bg-gradient-to-r from-slate-500 to-blue-700"
+                  : "text-slate-700 bg-white/30 border border-white/50 backdrop-blur-xl hover:bg-white/40"
+              }`}
+          >
+            Login
+          </button>
         </div>
 
         <div
