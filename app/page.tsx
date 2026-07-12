@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 
-// Data Configurations - Core Team (Publication Secretary restored)
+// Data Configurations
 const coreTeam = [
   { name: "Tahrima Arafat", role: "Advisor", desc: "Guiding vision, standards, and strategy." },
   { name: "Hasan Mahmud", role: "President", desc: "Leads the society and its executive team." },
@@ -49,6 +49,11 @@ const pastEvents = [
   { title: "Onboarding Workshop 1", date: "AUGUST 2, 2026", desc: "First cohort welcome and orientation." }
 ];
 
+const navItems = [
+  "Home", "About", "Activities", "Events", "Leadership",
+  "Gallery", "Research", "Achievements", "Join", "Contact", "Login"
+];
+
 const galleryCategories = ["All", "Workshops", "Sports", "Seminars", "Meetings", "Volunteer", "Hospitality"];
 
 const researchPapers = [
@@ -79,51 +84,48 @@ const faqList = [
 
 export default function AppRouter() {
   const [activeTab, setActiveTab] = useState('Home');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-  const navItems = ['Home', 'About', 'Activities', 'Events', 'Leadership', 'Gallery', 'Research', 'Achievements', 'Join', 'Contact', 'Login'];
+  const [openFaq, setOpenFaq] = useState(null); // Changed to standard useState for .txt context
 
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans relative overflow-x-hidden selection:bg-emerald-100">
-      
+      {/* Navigation ... */}
       {/* GLOWING AMBIENT ACCENTS */}
       <div className="absolute top-[-5%] left-[-10%] w-[550px] h-[550px] bg-[#d1fae5]/40 rounded-full filter blur-[110px] pointer-events-none mix-blend-multiply" />
       <div className="absolute top-[15%] right-[-10%] w-[600px] h-[600px] bg-[#fce7f3]/50 rounded-full filter blur-[100px] pointer-events-none mix-blend-multiply" />
       
-      {/* HEADER NAVIGATION - BIG, BOLD, AND GRADIENT */}
-<nav className="w-full bg-white/70 backdrop-blur-md px-8 py-6 flex justify-center items-center border-b border-slate-100 sticky top-0 z-50">
-  <div className="flex gap-2 group/nav">
-    {navItems.map((item) => {
-      const gradients: Record<string, string> = {
-        'Home': 'hover:from-emerald-500 hover:to-emerald-600',
-        'About': 'hover:from-blue-500 hover:to-indigo-500',
-        'Activities': 'hover:from-orange-400 hover:to-pink-500',
-        'Events': 'hover:from-purple-500 hover:to-violet-600',
-        'Leadership': 'hover:from-rose-500 hover:to-red-600',
-        'Gallery': 'hover:from-amber-400 hover:to-yellow-500',
-        'Research': 'hover:from-teal-500 hover:to-cyan-600',
-        'Achievements': 'hover:from-lime-500 hover:to-green-600',
-        'Join': 'hover:from-fuchsia-500 hover:to-purple-600',
-        'Contact': 'hover:from-slate-700 hover:to-slate-900',
-        'Login': 'hover:from-slate-500 hover:to-blue-700',
-      };
-
-      return (
-        <button
-          key={item}
-          onClick={() => setActiveTab(item)}
-          className={`px-6 py-3 rounded-full transition-all duration-300 text-sm font-extrabold tracking-wide 
-            ${activeTab === item 
-              ? 'text-white bg-gradient-to-r from-slate-400 to-slate-600'
-              : `text-slate-600 hover:text-white bg-transparent ${gradients[item] || 'hover:from-slate-500 hover:to-slate-600'} hover:bg-gradient-to-r`
-            }`}
-        >
-          {item}
-        </button>
-      );
-    })}
-  </div>
-</nav>
+      {/* HEADER NAVIGATION */}
+      <nav className="w-full bg-white/70 backdrop-blur-md px-8 py-6 flex justify-center items-center border-b border-slate-100 sticky top-0 z-50">
+        <div className="flex gap-2 group/nav">
+          {navItems.map((item) => {
+            const gradients = {
+              'Home': 'hover:from-emerald-500 hover:to-emerald-600',
+              'About': 'hover:from-blue-500 hover:to-indigo-500',
+              'Activities': 'hover:from-orange-400 hover:to-pink-500',
+              'Events': 'hover:from-purple-500 hover:to-violet-600',
+              'Leadership': 'hover:from-rose-500 hover:to-red-600',
+              'Gallery': 'hover:from-amber-400 hover:to-yellow-500',
+              'Research': 'hover:from-teal-500 hover:to-cyan-600',
+              'Achievements': 'hover:from-lime-500 hover:to-green-600',
+              'Join': 'hover:from-fuchsia-500 hover:to-purple-600',
+              'Contact': 'hover:from-slate-700 hover:to-slate-900',
+              'Login': 'hover:from-slate-500 hover:to-blue-700',
+            };
+            return (
+              <button
+                key={item}
+                onClick={() => setActiveTab(item)}
+                className={`px-6 py-3 rounded-full transition-all duration-300 text-sm font-extrabold tracking-wide 
+                  ${activeTab === item 
+                    ? 'text-white bg-gradient-to-r from-slate-400 to-slate-600'
+                    : `text-slate-600 hover:text-white bg-transparent ${gradients[item] || 'hover:from-slate-500 hover:to-slate-600'} hover:bg-gradient-to-r`
+                  }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {/* DYNAMIC TAB CONTROLLER */}
       
@@ -168,7 +170,7 @@ export default function AppRouter() {
     alt="RUD StepUp Logo" 
     width={1000} 
     height={1000} 
-    className="w-full h-full object-contain transition-transform duration-300 ease-in-out hover:scale-250 cursor-pointer" 
+    className="w-full h-full object-contain transition-transform duration-300 ease-in-out hover:scale-[2.5] cursor-pointer" 
     priority 
   />
 </div>
@@ -223,7 +225,6 @@ export default function AppRouter() {
 {/* Glassmorphism Metrics Banner */}
 <section id="metrics-section" className="max-w-5xl mx-auto px-6 py-10 mt-10 scroll-mt-20">
   <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-2 md:grid-cols-6 gap-6">
-    </div>
     <div>
       <h3 className="text-2xl font-black text-[#0b1b3d]">15+</h3>
       <p className="text-[10px] font-bold tracking-wider text-slate-600 uppercase mt-0.5">Members</p>
@@ -264,7 +265,6 @@ export default function AppRouter() {
           <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1 mb-6">A society that grows leaders — not just members.</h2>
 <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
   {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
             <div>
               <p>We help students learn new skills, build confidence, create professional habits, and foster positive change through structured group activities, sports, research, networking, and leadership programs.</p>
             </div>
@@ -281,8 +281,6 @@ export default function AppRouter() {
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">CORE VALUES</span>
             <h3 className="text-xl font-bold text-slate-950 mt-1 mb-6">What we stand for</h3>
   <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
                        {["Leadership", "Innovation", "Professionalism", "Integrity", "Collaboration", "Growth"].map((val) => (
                 <div key={val} className="p-4 bg-white border border-slate-100 rounded-xl shadow-sm">
                   <h4 className="font-bold text-slate-900 text-xs mb-1">✦ {val}</h4>
@@ -304,8 +302,6 @@ export default function AppRouter() {
           </div>
           
          <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
            {activitiesList.map((item, index) => (
               <div key={index} className="p-5 border border-slate-100 rounded-xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between">
                 <div>
@@ -356,8 +352,6 @@ export default function AppRouter() {
           <div className="border-t border-slate-100 pt-10">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4">PAST EVENTS</h3>
        <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
             {pastEvents.map((pe, idx) => (
                 <div key={idx} className="p-4 border border-slate-100 bg-slate-50/50 rounded-xl">
                   <span className="text-[9px] font-bold text-slate-400 block mb-0.5">{pe.date}</span>
@@ -381,8 +375,6 @@ export default function AppRouter() {
           </div>
 
      <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
           {coreTeam.map((member, index) => (
               <div key={index} className="p-5 border border-slate-100 rounded-xl bg-white hover:border-slate-200 transition-all flex flex-col justify-between group">
                 <div>
@@ -421,12 +413,10 @@ export default function AppRouter() {
           </div>
 
       <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
        {[1, 2, 3, 4, 5, 6, 7, 8].map((img) => (
               <div key={img} className="aspect-square bg-slate-50 border border-slate-100 rounded-xl relative overflow-hidden group cursor-pointer shadow-inner flex items-center justify-center">
                 <span className="text-slate-300 text-xs font-semibold group-hover:text-slate-500 transition-colors">Capture Asset #{img}</span>
-                <div className="absolute inset-0 bg-slate-955/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                <div className="absolute inset-0 bg-slate-950/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
                   <span className="text-[9px] text-white font-bold tracking-wider uppercase bg-black/40 px-2 py-1 rounded backdrop-blur-sm">RUD Session</span>
                 </div>
               </div>
@@ -451,8 +441,6 @@ export default function AppRouter() {
           </div>
 
     <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
-  {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
           {researchPapers.map((paper, idx) => (
               <div key={idx} className="p-5 border border-slate-100 bg-white rounded-xl shadow-sm hover:border-slate-200 transition-all flex flex-col justify-between group cursor-pointer">
                 <div>
@@ -503,7 +491,7 @@ export default function AppRouter() {
 
    <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-1 md:grid-cols-3">
   {/* Now your content will stack on phones (1 column) and spread out on PCs (3 columns) */}
-</div>
+            <div className="space-y-6">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-4">REQUIREMENTS</span>
               <ul className="space-y-2 text-xs text-slate-600 font-medium mb-8">
                 <li className="flex items-center gap-2">✓ Current student at Royal University of Dhaka</li>
@@ -554,7 +542,7 @@ export default function AppRouter() {
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Why do you want to join?</label>
                   <textarea rows={3} className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 shadow-sm resize-none" placeholder="Share your ambition with the board..." />
                 </div>
-                <button type="button" className="w-full py-2.5 bg-slate-955 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-sm">Submit application</button>
+                <button type="button" className="w-full py-2.5 bg-slate-950 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-sm">Submit application</button>
               </form>
               <p className="text-[9px] text-center text-slate-400 mt-4 font-medium">A working member portal with review and approval flows will be enabled once Lovable Cloud is turned on.</p>
             </div>
@@ -600,7 +588,7 @@ export default function AppRouter() {
                 <input type="email" placeholder="Email" className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400" />
                 <input type="text" placeholder="Subject" className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400" />
                 <textarea rows={4} placeholder="Message" className="w-full px-3 py-2 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-slate-400 resize-none" />
-                <button type="button" className="px-5 py-2 bg-slate-955 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">Send message</button>
+                <button type="button" className="px-5 py-2 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">Send message</button>
               </form>
             </div>
           </div>
@@ -609,13 +597,10 @@ export default function AppRouter() {
 
       {/* FOOTER */}
       <footer className="border-t border-slate-100 py-10 bg-slate-50/40">
-  <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-start gap-4 text-[11px] font-medium">
-    <p className="text-left text-red-500">
-      © 2026 RUD StepUp Society of HMT. All Rights Reserved.
-    </p>
-  </div>
-</footer>
-
+        <div className="max-w-4xl mx-auto px-6 flex flex-col sm:flex-row justify-between                    items-start gap-4 text-[11px] font-medium">
+          <p className="text-left text-red-500">© 2026 RUD StepUp Society of HMT. All Rights Reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }
