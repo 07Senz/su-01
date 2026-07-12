@@ -1005,47 +1005,8 @@ export default function AppRouter() {
 
       {/* HEADER NAVIGATION */}
       <nav className="w-full bg-white/70 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50">
-        {/* Desktop */}
-        <div className="hidden md:flex justify-center items-center px-8 py-6">
-          <div className="flex gap-2 group/nav">
-            {navItems.map((item) => {
-              const gradients = {
-                Home: "hover:from-emerald-500 hover:to-emerald-600",
-                About: "hover:from-blue-500 hover:to-indigo-500",
-                Activities: "hover:from-orange-400 hover:to-pink-500",
-                Events: "hover:from-purple-500 hover:to-violet-600",
-                Leadership: "hover:from-rose-500 hover:to-red-600",
-                Gallery: "hover:from-amber-400 hover:to-yellow-500",
-                Research: "hover:from-teal-500 hover:to-cyan-600",
-                Achievements: "hover:from-lime-500 hover:to-green-600",
-                Join: "hover:from-fuchsia-500 hover:to-purple-600",
-                Contact: "hover:from-slate-700 hover:to-slate-900",
-                Login: "hover:from-slate-500 hover:to-blue-700",
-              };
-
-              return (
-                <button
-                  key={item}
-                  onClick={() => setActiveTab(item)}
-                  className={`px-6 py-3 rounded-full transition-all duration-300 text-sm font-extrabold tracking-wide 
-                    ${
-                      activeTab === item
-                        ? "text-white bg-gradient-to-r from-slate-400 to-slate-600"
-                        : `text-slate-600 hover:text-white bg-transparent ${
-                            gradients[item as keyof typeof gradients] ||
-                            "hover:from-slate-500 hover:to-slate-600"
-                          } hover:bg-gradient-to-r`
-                    }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Mobile + Tablet: hamburger + dropdown */}
-        <div className="md:hidden flex items-center justify-between px-4 py-4">
+        {/* Single navigation UI for all screens (desktop now matches phone) */}
+        <div className="flex items-center justify-between px-4 md:px-8 py-4">
           <button
             type="button"
             aria-label="Toggle navigation"
@@ -1058,27 +1019,25 @@ export default function AppRouter() {
               el.setAttribute("data-open", open ? "false" : "true");
             }}
           >
-            {/* metalic/glassy 3-line icon */}
             <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/50 to-transparent opacity-60 pointer-events-none" />
             <span className="block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm group-hover:bg-slate-900" />
             <span className="absolute block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm top-[14px] group-hover:bg-slate-900" />
             <span className="absolute block w-5 h-[2px] bg-slate-900/80 rounded-full shadow-sm top-[28px] group-hover:bg-slate-900" />
           </button>
 
-          <div className="text-xs font-extrabold tracking-widest text-slate-700 px-2">
+          <div className="text-xs md:text-sm font-extrabold tracking-widest text-slate-700 px-2">
             {activeTab}
           </div>
 
-          {/* right spacer */}
           <div className="w-11" />
         </div>
 
         <div
           id="mobile-nav"
           data-open="false"
-          className="md:hidden overflow-hidden transition-[max-height] duration-300 ease-in-out max-h-0"
+          className="overflow-hidden transition-[max-height] duration-300 ease-in-out max-h-0"
         >
-          <div className="px-4 pb-4">
+          <div className="px-4 pb-4 md:px-8">
             <div className="flex flex-col gap-2">
               {navItems.map((item) => {
                 const gradients = {
@@ -1132,30 +1091,17 @@ export default function AppRouter() {
         </div>
       </nav>
 
-      {/* Toggle mobile nav max-height (imperative to avoid extra state) */}
+      {/* Toggle mobile nav max-height */}
       <style jsx>{`
         #mobile-nav[data-open="true"] {
-          max-height: 420px;
+          max-height: 520px;
         }
       `}</style>
 
       {/* DYNAMIC TAB CONTROLLER */}
 
-      {/* Member/Admin Login screens (2 fields) */}
-      {!authedMemberId && !authedAdmin && activeTab === "MemberLogin" && (
-        <div className="flex justify-center items-center py-20 px-6">
-          <MemberLoginForm
-            members={members}
-            onBack={() => setActiveTab("Home")}
-            onSuccess={(memberId) => {
-              setAuthedMemberId(memberId);
-              setActiveTab("Home");
-            }}
-          />
-        </div>
-      )}
-
-      {!authedMemberId && !authedAdmin && activeTab === "AdminLogin" && (
+      {/* LOGIN SCREEN (single) */}
+      {!authedMemberId && !authedAdmin && activeTab === "Login" && (
         <div className="flex justify-center items-center py-20 px-6">
           <AdminLoginForm
             onBack={() => setActiveTab("Home")}
@@ -1186,8 +1132,7 @@ export default function AppRouter() {
       {authedMemberId === null &&
         !authedAdmin &&
         activeTab !== "Home" &&
-        activeTab !== "MemberLogin" &&
-        activeTab !== "AdminLogin" && <div className="hidden" />}
+        activeTab !== "Login" && <div className="hidden" />}
 
       {/* 1. HOME TAB */}
       {activeTab === "Home" && (
