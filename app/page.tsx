@@ -935,10 +935,6 @@ function AdminLoginForm({
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
         />
 
-        <div className="text-[11px] font-bold text-slate-700 text-center">
-          Enter as: <span className="text-slate-950">{formId}</span>
-        </div>
-
         {error && (
           <div className="text-[11px] font-bold text-red-600 text-center">
             {error}
@@ -1029,18 +1025,7 @@ export default function AppRouter() {
             {activeTab}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("Login")}
-            className={`px-4 h-11 flex items-center justify-center rounded-2xl text-xs font-extrabold tracking-wide transition-all shadow-sm
-              ${
-                activeTab === "Login"
-                  ? "text-white bg-gradient-to-r from-slate-500 to-blue-700"
-                  : "text-slate-700 bg-white/30 border border-white/50 backdrop-blur-xl hover:bg-white/40"
-              }`}
-          >
-            Login
-          </button>
+          <div className="w-11" />
         </div>
 
         <div
