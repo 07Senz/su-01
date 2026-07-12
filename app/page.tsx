@@ -1789,10 +1789,10 @@ export default function AppRouter() {
               CONTACT
             </span>
             <h2 className="text-3xl font-serif font-bold text-slate-950 mt-1">
-              Let&amp;apos;s talk.
+              Let talk.
             </h2>
             <p className="text-xs text-slate-400 mt-1 font-medium">
-              Questions, collaborations, or media enquiries — we&amp;apos;re
+              Questions, collaborations, or media enquiries 
               here.
             </p>
           </div>
