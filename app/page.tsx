@@ -808,7 +808,10 @@ function MemberLoginForm({
   onSuccess: (memberId: string) => void;
 }) {
   const [memberType, setMemberType] = useState<MemberType>("G.M");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  const MEMBER_PASS = "000";
 
   const normalizedMembers = useMemo(() => {
     return members.map((m) => ({
@@ -838,9 +841,13 @@ function MemberLoginForm({
       </div>
 
       <div className="flex flex-col gap-3">
-        <div className="text-[11px] font-bold text-slate-700 text-center">
-          Press <span className="text-slate-950">Enter</span> to login.
-        </div>
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          type="password"
+          placeholder="Password"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
 
         {error && (
           <div className="text-[11px] font-bold text-red-600 text-center">
@@ -860,6 +867,10 @@ function MemberLoginForm({
             type="button"
             onClick={() => {
               setError(null);
+
+              if (password !== MEMBER_PASS)
+                return setError("Incorrect Password");
+
               if (normalizedMembers.length === 0)
                 return setError("No members added yet.");
 
@@ -868,7 +879,6 @@ function MemberLoginForm({
               );
               if (!match) return setError(`No ${memberType} member found.`);
 
-              // Per requirement: members don't type; just login button.
               onSuccess(match.id);
             }}
             className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
@@ -1031,7 +1041,10 @@ export default function AppRouter() {
 
           <button
             type="button"
-            onClick={() => setActiveTab("Login")}
+            onClick={() => {
+              setAuthMode(null);
+              setActiveTab("Login");
+            }}
             className={`px-4 h-11 flex items-center justify-center rounded-2xl text-xs font-extrabold tracking-wide transition-all shadow-sm
               ${
                 activeTab === "Login"
@@ -1071,6 +1084,7 @@ export default function AppRouter() {
                   <button
                     key={item}
                     onClick={() => {
+                      if (item === "Login") setAuthMode(null);
                       setActiveTab(item);
                       const el = document.getElementById("mobile-nav");
                       if (!el) return;
@@ -1114,29 +1128,60 @@ export default function AppRouter() {
       {/* LOGIN SCREEN (single) */}
       {!authedMemberId && !authedAdmin && activeTab === "Login" && (
         <div className="flex justify-center items-center py-20 px-6">
-          <AdminLoginForm
-            onBack={() => setActiveTab("Home")}
-            members={members}
-            ADMIN_PASS="123"
-            onSuccess={() => {
-              setAuthedAdmin(true);
-              setActiveTab("Admin");
-            }}
-          />
-        </div>
-      )}
+          {authMode === null && (
+            <div className="bg-white/80 backdrop-blur-xl border border-slate-100 shadow-2xl rounded-[2rem] p-8 w-full max-w-sm flex flex-col gap-3">
+              <h2 className="text-2xl font-black text-slate-900 mb-3 text-center">
+                Login as
+              </h2>
+              <button
+                type="button"
+                onClick={() => setAuthMode("member")}
+                className="w-full px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
+              >
+                Member
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode("admin")}
+                className="w-full px-3 py-3 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-all"
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("Home")}
+                className="w-full px-3 py-2 text-slate-400 text-[11px] font-bold hover:text-slate-600 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
 
-      {authedAdmin && activeTab === "Admin" && (
-        <AdminPanelForm
-          members={members}
-          setMembers={setMembers}
-          onLogout={() => {
-            setAuthedAdmin(false);
-            setAuthedMemberId(null);
-            setAuthMode(null);
-            setActiveTab("Home");
-          }}
-        />
+          {authMode === "member" && (
+            <MemberLoginForm
+              members={members}
+              onBack={() => setAuthMode(null)}
+              onSuccess={(memberId) => {
+                setAuthedMemberId(memberId);
+                setAuthMode(null);
+                setActiveTab("Home");
+              }}
+            />
+          )}
+
+          {authMode === "admin" && (
+            <AdminLoginForm
+              onBack={() => setAuthMode(null)}
+              members={members}
+              ADMIN_PASS="123"
+              onSuccess={() => {
+                setAuthedAdmin(true);
+                setAuthMode(null);
+                setActiveTab("Admin");
+              }}
+            />
+          )}
+        </div>
       )}
 
       {/* Gated website */}
