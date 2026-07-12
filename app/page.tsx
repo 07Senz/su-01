@@ -223,7 +223,7 @@ export default function AppRouter() {
 {/* Glassmorphism Metrics Banner */}
 <section id="metrics-section" className="max-w-5xl mx-auto px-6 py-10 mt-10 scroll-mt-20">
   <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-8 grid grid-cols-2 md:grid-cols-6 gap-6">
-    
+    </div>
     <div>
       <h3 className="text-2xl font-black text-[#0b1b3d]">15+</h3>
       <p className="text-[10px] font-bold tracking-wider text-slate-600 uppercase mt-0.5">Members</p>
