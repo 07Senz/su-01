@@ -1,19 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../auth/AuthContext";
 
 export default function HomePage() {
   const { authedAdmin, authedMemberId } = useAuth();
+  const router = useRouter();
 
-  if (!authedMemberId && !authedAdmin) {
-    return <div className="min-h-screen" />;
+  useEffect(() => {
+    if (!authedAdmin && !authedMemberId) {
+      router.replace("/");
+    }
+  }, [authedAdmin, authedMemberId, router]);
+
+  if (!authedAdmin && !authedMemberId) {
+    return null;
   }
 
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans relative overflow-x-hidden selection:bg-emerald-100">
-
       <div className="absolute top-[-5%] left-[-10%] w-[550px] h-[550px] bg-[#d1fae5]/40 rounded-full filter blur-[110px] pointer-events-none mix-blend-multiply" />
       <div className="absolute top-[15%] right-[-10%] w-[600px] h-[600px] bg-[#fce7f3]/50 rounded-full filter blur-[100px] pointer-events-none mix-blend-multiply" />
 
@@ -136,5 +143,6 @@ export default function HomePage() {
     </div>
   );
 }
+
 
 

@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
 import { useAuth } from "./auth/AuthContext";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 
 
 function FormPillButton({
@@ -987,11 +989,7 @@ function AdminLoginForm({
   );
 }
 
-import { useAuth } from "./auth/AuthContext";
-import { useRouter } from "next/navigation";
-
 export default function AppRouter() {
-
   const {
     authedAdmin,
     authedAdminId,
@@ -1000,10 +998,10 @@ export default function AppRouter() {
     authedMemberId,
     setAuthedMemberId,
     members,
-    setMembers,
   } = useAuth();
 
   const [openFaq, setOpenFaq] = useState<number | null>(null); // FAQ open index
+
 
   // Entry screen: choose who to login as.
   const [authMode, setAuthMode] = useState<"member" | "admin" | null>(null);
@@ -1254,10 +1252,13 @@ export default function AppRouter() {
                   ?.scrollIntoView({ behavior: "smooth" });
               }}
             >
-              <img
+              <Image
                 src="/Logo0.png"
                 alt="Scroll down"
+                width={200}
+                height={200}
                 className="w-32 h-32 object-contain opacity-50 transition-opacity duration-300 group-hover:opacity-100"
+                priority
               />
             </div>
           </header>
