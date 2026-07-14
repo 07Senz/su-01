@@ -289,43 +289,33 @@ function AdminPanelForm({
 
                 const memberType: MemberType = "Core";
 
-                // Persist into hidden JSON store via API
-                (async () => {
-                  try {
-                    const res = await fetch("/api/members/admin", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        action: "upsert",
-                        memberType,
-                        id: formId.trim(),
-                        password: pass.trim(),
-                        adminPass: "123",
-                      }),
-                    });
-                    const data = await res.json();
-                    if (!res.ok) return setError(data?.error || "Failed to save member");
-                    if (Array.isArray(data?.members)) setMembers(data.members);
-                  } catch {
-                    setError("Failed to save member");
-                  }
-                })();
+                // Persist via localStorage
+                try {
+                  const next = (() => {
+                    const prev = Array.isArray(members) ? members : [];
+                    const exists = prev.some((m) => m.id === formId.trim());
+                    if (exists) {
+                      return prev.map((m) =>
+                        m.id === formId.trim()
+                          ? { ...m, password: pass.trim(), memberType }
+                          : m,
+                      );
+                    }
+                    return [
+                      ...prev,
+                      { id: formId.trim(), password: pass.trim(), memberType },
+                    ];
+                  })();
 
-                // Optimistically update UI state too
-                setMembers((prev) => {
-                  const exists = prev.some((m) => m.id === formId.trim());
-                  if (exists) {
-                    return prev.map((m) =>
-                      m.id === formId.trim()
-                        ? { ...m, password: pass.trim(), memberType }
-                        : m,
-                    );
-                  }
-                  return [
-                    ...prev,
-                    { id: formId.trim(), password: pass.trim(), memberType },
-                  ];
-                });
+                  localStorage.setItem(
+                    "rudstepup_members_v1",
+                    JSON.stringify(next),
+                  );
+                  setMembers(next);
+                } catch {
+                  setError("Failed to save member");
+                }
+
 
                 // UI only: clear fields (basic info isn't stored in auth shape yet)
                 setName("");
@@ -1085,20 +1075,20 @@ export default function AppRouter() {
   const [activeTab, setActiveTab] = useState("Login");
 
   useEffect(() => {
-    // Load persisted members from hidden JSON store (admin can edit via panel)
-    (async () => {
-      try {
-        const res = await fetch("/api/members", { method: "GET" });
-        const data = await res.json();
-        if (Array.isArray(data?.members)) {
-          setMembers(data.members);
-        }
-      } catch {
-        // ignore
+    // Local persistence to avoid any static-export / out/ validation issues.
+    try {
+      const raw = localStorage.getItem("rudstepup_members_v1");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        setMembers(parsed);
       }
-    })();
+    } catch {
+      // ignore
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans relative overflow-x-hidden selection:bg-emerald-100">
