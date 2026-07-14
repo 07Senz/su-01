@@ -812,8 +812,10 @@ function MemberLoginForm({
   onSuccess: (memberId: string) => void;
 }) {
   const [memberType, setMemberType] = useState<MemberType>("G.M");
+  const [memberId, setMemberId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+
 
   const MEMBER_PASS = "000";
 
@@ -846,12 +848,20 @@ function MemberLoginForm({
 
       <div className="flex flex-col gap-3">
         <input
+          value={memberId}
+          onChange={(e) => setMemberId(e.target.value)}
+          placeholder="# ID"
+          className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
+        />
+
+        <input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           type="password"
           placeholder="Password"
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
         />
+
 
         {error && (
           <div className="text-[11px] font-bold text-red-600 text-center">
@@ -872,18 +882,21 @@ function MemberLoginForm({
             onClick={() => {
               setError(null);
 
+              if (!memberId.trim()) return setError("# ID is required");
+
               if (password !== MEMBER_PASS)
                 return setError("Incorrect Password");
 
               if (normalizedMembers.length === 0)
                 return setError("No members added yet.");
 
-              const match = normalizedMembers.find(
-                (m) => m.memberType === memberType,
-              );
-              if (!match) return setError(`No ${memberType} member found.`);
+              const match = normalizedMembers.find((m) => m.id === memberId.trim());
+              if (!match) return setError("Member not found");
+              if (match.memberType !== memberType)
+                return setError(`No ${memberType} member found.`);
 
               onSuccess(match.id);
+
             }}
             className="flex-1 px-3 py-3 bg-slate-950 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all"
           >
@@ -938,9 +951,10 @@ function AdminLoginForm({
           value={coreNumber}
           onChange={(e) => setCoreNumber(e.target.value)}
           inputMode="numeric"
-          placeholder="# number"
+          placeholder="# ID"
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
         />
+
         <input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -949,9 +963,7 @@ function AdminLoginForm({
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-900 text-xs"
         />
 
-        <div className="text-[11px] font-bold text-slate-700 text-center">
-          Enter as: <span className="text-slate-950">{formId}</span>
-        </div>
+
 
         {error && (
           <div className="text-[11px] font-bold text-red-600 text-center">
