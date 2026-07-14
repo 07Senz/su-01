@@ -2,6 +2,8 @@
 
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
+import { useAuth } from "./auth/AuthContext";
+
 
 function FormPillButton({
   label,
@@ -985,24 +987,28 @@ function AdminLoginForm({
   );
 }
 
-export default function AppRouter() {
-  const [activeTab, setActiveTab] = useState("Home");
+import { useAuth } from "./auth/AuthContext";
+import { useRouter } from "next/navigation";
 
-  const [authedAdminId, setAuthedAdminId] = useState<string | null>(null);
+export default function AppRouter() {
+
+  const {
+    authedAdmin,
+    authedAdminId,
+    setAuthedAdmin,
+    setAuthedAdminId,
+    authedMemberId,
+    setAuthedMemberId,
+    members,
+    setMembers,
+  } = useAuth();
 
   const [openFaq, setOpenFaq] = useState<number | null>(null); // FAQ open index
 
-  // Auth / gating
-  type MemberType = "G.M" | "E.M" | "Core";
-  type MemberRecord = { id: string; password: string; memberType: MemberType };
-
-  // Stored only in-memory (no backend). Added via Admin panel.
-  const [members, setMembers] = useState<MemberRecord[]>([]);
-  const [authedMemberId, setAuthedMemberId] = useState<string | null>(null);
-  const [authedAdmin, setAuthedAdmin] = useState(false);
-
   // Entry screen: choose who to login as.
   const [authMode, setAuthMode] = useState<"member" | "admin" | null>(null);
+
+  const [activeTab, setActiveTab] = useState("Login");
 
   const ADMIN_PASS = "123";
 

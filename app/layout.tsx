@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Created By Senz",
 };
 
+import { AuthProvider } from "./auth/AuthContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -32,7 +34,10 @@ export default function RootLayout({
         <link rel="icon" type="image/png" href="/Logo1.png" />
       </head>
 
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
+
