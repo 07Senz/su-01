@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "deploy:cloudflare": "echo \"Cloudflare Next.js server adapter not configured in this repo. Intentional mismatch to surface build/run errors.\" && exit 1",
+    "deploy:cloudflare": "echo \"Use Cloudflare Pages Functions for Next.js serverful deployment (adapter not auto-configured here).\"",
     "prepare:out": "node -e \"const fs=require('fs'); if(!fs.existsSync('out')) fs.mkdirSync('out');\"",
     "build:cf": "npm run prepare:out && npm run build"
   },

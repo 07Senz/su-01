@@ -1,6 +1,6 @@
-- [ ] Inspect authentication context + gated routes
-- [ ] Implement Logout button in `app/page.tsx` navigation/header
-- [ ] Logout handler: clear existing AuthContext session + redirect to `/`
-- [ ] Ensure protected `/home` is not accessible after logout (via existing guard)
-- [ ] Verify by manual test: Login -> /home -> Logout -> redirected to / and /home blocked
+- [x] Remove/adjust Cloudflare deploy failure (server adapter mismatch)
+- [ ] Ensure deploy uses Cloudflare Pages Functions (serverful) not static export
+- [ ] Delete/disable broken `server.js` if it blocks deployment
+- [ ] Make build/deploy scripts pass for Cloudflare Pages Functions
+
 
