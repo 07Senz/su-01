@@ -1,0 +1,8 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/_global-error/page": "/_global-error",
+  "/api/members/admin/route": "/api/members/admin",
+  "/home/page": "/home",
+  "/page": "/",
+  "/api/members/route": "/api/members"
+}
