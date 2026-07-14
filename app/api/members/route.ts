@@ -21,6 +21,7 @@ import { getD1FromEnv } from "../_cf/d1";
 // Your Cloudflare adapter must call this route with `env` available.
 // Next.js doesn't provide `env` automatically, so the adapter wiring is required.
 function getD1(req: Request): D1Local {
+  // env is injected by the CF adapter at runtime; Request doesn't type it.
   const env = (req as any).env;
   return getD1FromEnv(env) as D1Local;
 }
