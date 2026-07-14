@@ -7,7 +7,7 @@ export default {
   async fetch(request, env, ctx) {
     return new Response(
       JSON.stringify({
-        error: "Next.js Cloudflare runtime bootstrap not configured. This is an intentional build/run mismatch to surface errors clearly.",
+        error: "Cloudflare runtime bootstrap not configured for Next.js server.",
         note: "Use Cloudflare Pages Functions/Workers Framework or a dedicated Next.js adapter to run Next.js server on Cloudflare.",
       }),
       { status: 500, headers: { "content-type": "application/json" } },

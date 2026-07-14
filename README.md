@@ -41,8 +41,9 @@ npm run build
 
 ### Cloudflare deploy (example)
 
-> This repository does not include a verified Next.js-on-Cloudflare runtime adapter.
-> The files `wrangler.toml` and `server.js` are intentionally set up as a **deployment mismatch** to make Cloudflare show an error during build/run so you can see what to fix.
+> This repo uses Cloudflare Wrangler for build.
+> Note: running Next.js server on Cloudflare requires a compatible runtime/adapter; if you deploy and see runtime errors, use Pages Functions or a supported Next.js adapter.
+
 
 To attempt a deploy and view the error output:
 
