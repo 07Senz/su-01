@@ -1,14 +1,18 @@
+# NOTE:
+# This repository is a Next.js app. Cloudflare Pages/Workers "wrangler.toml" expects a
+# different build/runtime configuration than Next.js server apps.
+#
+# To avoid deploy-time failures about missing build output (e.g. `out/`),
+# this file is intentionally kept minimal and does NOT trigger Next.js build.
+#
+# If you use Cloudflare Workers, use framework-compatible adapters/bundlers.
+
 name = "rud-stepup-nextjs"
 main = "server.js"
 compatibility_date = "2024-01-01"
 
-[build]
-# Cloudflare build is forced to fail so Cloudflare clearly shows build errors
-command = "npm run build"
-
-
-
 [vars]
 # Used by app/api/members/admin/route.ts
 ADMIN_PASS = "123"
+
 
