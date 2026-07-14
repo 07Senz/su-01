@@ -6,7 +6,7 @@ type MemberRecord = {
   memberType: "G.M" | "E.M" | "Core";
 };
 
-type D1Like = {
+type D1Local = {
   prepare: (sql: string) => {
     bind: (...args: any[]) => {
       run: () => Promise<any>;
@@ -20,14 +20,13 @@ import { getD1FromEnv } from "../_cf/d1";
 
 // Your Cloudflare adapter must call this route with `env` available.
 // Next.js doesn't provide `env` automatically, so the adapter wiring is required.
-function getD1(req: Request): D1Like {
-  // @ts-expect-error - env is injected by CF adapter
+function getD1(req: Request): D1Local {
   const env = (req as any).env;
-  return getD1FromEnv(env);
+  return getD1FromEnv(env) as D1Local;
 }
 
 
-async function d1GetMembers(d1: D1Like): Promise<MemberRecord[]> {
+async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   const rows = await d1
     .prepare("SELECT id, password, memberType FROM members ORDER BY id ASC")
     .all();
@@ -39,7 +38,7 @@ async function d1GetMembers(d1: D1Like): Promise<MemberRecord[]> {
   }));
 }
 
-async function d1UpsertMembers(d1: D1Like, members: MemberRecord[]) {
+async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
   for (const m of members) {
     await d1
       .prepare(
@@ -50,10 +49,9 @@ async function d1UpsertMembers(d1: D1Like, members: MemberRecord[]) {
   }
 }
 
-export async function GET() {
-  const d1 = getD1FromEnv((globalThis as any).env ?? (globalThis as any).cfEnv ?? ({}));
-  // Fallback: if adapter injects req.env instead, update adapter accordingly.
-  const members = await d1GetMembers(d1 as any);
+export async function GET(req: Request) {
+  const d1 = getD1(req);
+  const members = await d1GetMembers(d1);
   return NextResponse.json({ members });
 }
 
