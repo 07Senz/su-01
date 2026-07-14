@@ -1,0 +1,12 @@
+name = "rud-stepup-nextjs"
+main = "server.js"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+output_dir = ".next"
+
+[vars]
+# Used by app/api/members/admin/route.ts
+ADMIN_PASS = "123"
+

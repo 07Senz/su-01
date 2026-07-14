@@ -29,8 +29,34 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Cloudflare (serverful)
+
+This app includes **API routes** under `app/api/*`, so it must run as a **Next.js server app** (not static export / `output: 'export'`).
+
+### Build
+
+```bash
+npm run build
+```
+
+### Cloudflare deploy (example)
+
+> This repository does not include a verified Next.js-on-Cloudflare runtime adapter.
+> The files `wrangler.toml` and `server.js` are intentionally set up as a **deployment mismatch** to make Cloudflare show an error during build/run so you can see what to fix.
+
+To attempt a deploy and view the error output:
+
+```bash
+npx wrangler deploy
+```
+
+### Environment variables
+
+- `ADMIN_PASS` (used by `app/api/members/admin/route.ts`)
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
