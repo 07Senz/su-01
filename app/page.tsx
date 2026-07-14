@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "./auth/AuthContext";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+
+
+
 
 
 
@@ -219,12 +221,14 @@ function AdminPanelForm({
           </div>
 
           <button
+            type="button"
             onClick={onLogout}
             className="px-4 py-2 bg-slate-950 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-sm"
           >
             Logout
           </button>
         </div>
+
 
         <div className="bg-white/30 backdrop-blur-xl border border-white/50 shadow-2xl rounded-[2rem] p-6">
           {/* PC hamburger-style section switch */}
@@ -283,8 +287,31 @@ function AdminPanelForm({
                 if (!email.trim()) return setError("Email is required");
                 if (!pass.trim()) return setError("Password is required");
 
-                // Persist into current auth storage shape
                 const memberType: MemberType = "Core";
+
+                // Persist into hidden JSON store via API
+                (async () => {
+                  try {
+                    const res = await fetch("/api/members/admin", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "upsert",
+                        memberType,
+                        id: formId.trim(),
+                        password: pass.trim(),
+                        adminPass: "123",
+                      }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) return setError(data?.error || "Failed to save member");
+                    if (Array.isArray(data?.members)) setMembers(data.members);
+                  } catch {
+                    setError("Failed to save member");
+                  }
+                })();
+
+                // Optimistically update UI state too
                 setMembers((prev) => {
                   const exists = prev.some((m) => m.id === formId.trim());
                   if (exists) {
@@ -443,6 +470,29 @@ function AdminPanelForm({
                 e.preventDefault();
                 if (!resetFormId.trim()) return;
                 if (!resetNewPass.trim()) return;
+
+                // Persist via API
+                (async () => {
+                  try {
+                    const res = await fetch("/api/members/admin", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        action: "reset",
+                        id: resetFormId.trim(),
+                        password: resetNewPass.trim(),
+                        adminPass: "123",
+                      }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) return;
+                    if (Array.isArray(data?.members)) setMembers(data.members);
+                  } catch {
+                    // ignore
+                  }
+                })();
+
+                // Optimistically update UI
                 setMembers((prev) =>
                   prev.map((m) =>
                     m.id === resetFormId.trim()
@@ -450,6 +500,7 @@ function AdminPanelForm({
                       : m,
                   ),
                 );
+
                 setResetNewPass("");
               }}
             >
@@ -1004,13 +1055,26 @@ function AdminLoginForm({
 export default function AppRouter() {
   const {
     authedAdmin,
-    authedAdminId,
     setAuthedAdmin,
     setAuthedAdminId,
     authedMemberId,
     setAuthedMemberId,
     members,
+    setMembers,
   } = useAuth();
+
+
+  const handleLogout = () => {
+    setAuthedAdmin(false);
+    setAuthedAdminId(null);
+    setAuthedMemberId(null);
+
+    // Reset UI state back to login.
+    setAuthMode(null);
+    setActiveTab("Login");
+  };
+
+
 
   const [openFaq, setOpenFaq] = useState<number | null>(null); // FAQ open index
 
@@ -1020,7 +1084,21 @@ export default function AppRouter() {
 
   const [activeTab, setActiveTab] = useState("Login");
 
-  const ADMIN_PASS = "123";
+  useEffect(() => {
+    // Load persisted members from hidden JSON store (admin can edit via panel)
+    (async () => {
+      try {
+        const res = await fetch("/api/members", { method: "GET" });
+        const data = await res.json();
+        if (Array.isArray(data?.members)) {
+          setMembers(data.members);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="bg-white text-slate-900 min-h-screen font-sans relative overflow-x-hidden selection:bg-emerald-100">
