@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useMemo, useState } from "react";
 
-export type MemberType = "Member" | "Core";
+export type MemberType = "Core";
+
 
 export type MemberRecord = { id: string; password: string; memberType: MemberType };
 

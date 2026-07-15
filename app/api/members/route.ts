@@ -3,8 +3,9 @@ import { NextResponse } from "next/server";
 export type MemberRecord = {
   id: string;
   password: string;
-  memberType: "G.M" | "E.M" | "Core";
+  memberType: "Core";
 };
+
 
 
 type D1Local = {
@@ -40,9 +41,10 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   return (list as any[]).map((r) => ({
     id: String(r.id),
     password: String(r.password ?? ""),
-    memberType: r.memberType as MemberRecord["memberType"],
+    memberType: "Core",
   }));
 }
+
 
 
 async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
@@ -82,8 +84,10 @@ export async function POST(req: Request) {
       const password = String(m?.password ?? "");
       const memberType = m?.memberType;
       if (!id) return null;
-      if (memberType !== "G.M" && memberType !== "E.M" && memberType !== "Core") return null;
-      return { id, password, memberType } as MemberRecord;
+      // Roles removed; only Core is supported
+      if (memberType !== "Core") return null;
+      return { id, password, memberType: "Core" } as MemberRecord;
+
     })
     .filter(Boolean) as MemberRecord[];
 

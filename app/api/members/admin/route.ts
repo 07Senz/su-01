@@ -29,7 +29,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { action, memberType, id, password, adminPass } = body as any;
+  const { action, id, password, adminPass } = body as any;
+
+
 
   // WARNING: this is only for this demo app.
   const ADMIN_PASS = process.env.ADMIN_PASS ?? "123";
@@ -37,9 +39,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!action || (action !== "upsert" && action !== "reset")) {
+  if (!action || (action !== "upsert" && action !== "reset" && action !== "delete" && action !== "import")) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
+
 
   const store = await readStore();
   let members = store.members;
@@ -47,19 +50,17 @@ export async function POST(req: Request) {
   if (action === "upsert") {
     const cleanId = String(id ?? "").trim();
     const cleanPass = String(password ?? "");
-    const cleanType = memberType;
 
     if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
-    if (cleanType !== "G.M" && cleanType !== "E.M" && cleanType !== "Core") {
-      return NextResponse.json({ error: "memberType invalid" }, { status: 400 });
-    }
 
+    // Roles removed; only Core is supported. Ignore any incoming memberType.
     const idx = members.findIndex((m: any) => String(m?.id ?? "").trim() === cleanId);
-    const next = { id: cleanId, password: cleanPass, memberType: cleanType };
+    const next = { id: cleanId, password: cleanPass, memberType: "Core" };
 
     if (idx >= 0) members = members.map((m: any, i: number) => (i === idx ? next : m));
     else members = [...members, next];
   }
+
 
   if (action === "reset") {
     const cleanId = String(id ?? "").trim();
