@@ -1,50 +1,51 @@
-# Deployment
+# Cloudflare Workers Deployment
 
 This project uses **Next.js**, **OpenNext**, and **Cloudflare Workers**.
 
-## Development
+OpenNext converts the Next.js application into a Cloudflare Worker, enabling support for:
 
-Run the development server:
+- App Router
+- API Routes
+- Server-Side Rendering (SSR)
+- Static Generation (SSG)
+- Middleware (where supported)
+
+## Local Development
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000 in your browser.
-
----
-
-## Build
-
-Build the project for production:
+## Production Build
 
 ```bash
 npm run build
 ```
 
----
+## Build for Cloudflare (OpenNext)
 
-## Deploy to Cloudflare Workers
+```bash
+npm run cf:build
+```
 
-### Local deployment
+This command:
 
-Deploy the latest version:
+1. Builds the Next.js application.
+2. Generates the `.open-next` Worker bundle.
+
+## Deploy
 
 ```bash
 npm run cf:deploy
 ```
 
-This command automatically:
+This command:
 
 1. Builds the Next.js application.
-2. Generates the OpenNext Cloudflare Worker.
-3. Deploys it using Wrangler.
+2. Builds the OpenNext Worker.
+3. Deploys the Worker using Wrangler.
 
----
-
-### Git workflow
-
-Before deploying, save your changes to GitHub:
+## Git Workflow
 
 ```bash
 git add .
@@ -58,26 +59,18 @@ Then deploy:
 npm run cf:deploy
 ```
 
----
+## Cloudflare Git Deployment
 
-## Cloudflare Build Settings
+Configure your Worker with:
 
-Build command:
+**Build command**
 
 ```bash
 npm run cf:build
 ```
 
-Deploy command:
+**Deploy command**
 
 ```bash
 npx wrangler deploy
 ```
-
----
-
-## Environment Variables
-
-Required:
-
-- `ADMIN_PASS`
