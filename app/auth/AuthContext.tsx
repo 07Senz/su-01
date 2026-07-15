@@ -2,8 +2,10 @@
 
 import React, { createContext, useContext, useMemo, useState } from "react";
 
-export type MemberType = "G.M" | "E.M" | "Core";
+export type MemberType = "Member" | "Core";
+
 export type MemberRecord = { id: string; password: string; memberType: MemberType };
+
 
 type AuthContextValue = {
   authedAdminId: string | null;

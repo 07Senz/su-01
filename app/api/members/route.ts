@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 
-type MemberRecord = {
+export type MemberRecord = {
   id: string;
   password: string;
   memberType: "G.M" | "E.M" | "Core";
 };
+
 
 type D1Local = {
   prepare: (sql: string) => {
@@ -32,12 +33,17 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
     .prepare("SELECT id, password, memberType FROM members ORDER BY id ASC")
     .all();
 
-  return (rows.results as any[]).map((r) => ({
+  // CF D1 returns different shapes depending on adapter.
+  const results = (rows as any)?.results ?? (rows as any);
+  const list = Array.isArray(results) ? results : (rows as any)?.results ?? [];
+
+  return (list as any[]).map((r) => ({
     id: String(r.id),
     password: String(r.password ?? ""),
     memberType: r.memberType as MemberRecord["memberType"],
   }));
 }
+
 
 async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
   for (const m of members) {
