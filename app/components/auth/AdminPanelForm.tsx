@@ -7,8 +7,6 @@ import type { MemberRecord } from "../../auth/AuthContext";
 
 type MemberType = MemberRecord["memberType"];
 
-const ADMIN_PASS_FALLBACK = "123";
-
 async function apiGetMembers(): Promise<MemberRecord[]> {
   const res = await fetch("/api/members", { method: "GET" });
   if (!res.ok) return [];
@@ -17,15 +15,24 @@ async function apiGetMembers(): Promise<MemberRecord[]> {
 }
 
 async function apiAdminRequest(payload: any): Promise<MemberRecord[]> {
+  // Demo-only auth: the client must send the configured admin password.
+  // In production, replace with cookie/session or signed tokens.
+  const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS ?? "";
+
   const res = await fetch("/api/members/admin", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-pass": ADMIN_PASS,
+    },
     body: JSON.stringify(payload),
   });
 
   if (!res.ok) return [];
   return apiGetMembers();
 }
+
+
 
 async function apiUpsertMember(input: {
   id: string;
@@ -36,7 +43,6 @@ async function apiUpsertMember(input: {
     id: input.id,
     password: input.password,
     memberType: "Core",
-    adminPass: ADMIN_PASS_FALLBACK,
   });
 }
 
@@ -44,7 +50,6 @@ async function apiDeleteMember(input: { id: string }): Promise<MemberRecord[]> {
   return apiAdminRequest({
     action: "delete",
     id: input.id,
-    adminPass: ADMIN_PASS_FALLBACK,
   });
 }
 
@@ -56,7 +61,6 @@ async function apiResetPassword(input: {
     action: "reset",
     id: input.id,
     password: input.password,
-    adminPass: ADMIN_PASS_FALLBACK,
   });
 }
 
@@ -65,10 +69,10 @@ async function apiImportMembers(input: {
 }): Promise<MemberRecord[]> {
   return apiAdminRequest({
     action: "import",
-    adminPass: ADMIN_PASS_FALLBACK,
     members: input.members,
   });
 }
+
 
 async function apiExportMembers(): Promise<MemberRecord[]> {
   return apiGetMembers();

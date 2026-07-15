@@ -25,8 +25,13 @@ import { getD1FromEnv } from "../_cf/d1";
 function getD1(req: Request): D1Local {
   // env is injected by the CF adapter at runtime; Request doesn't type it.
   const env = (req as any).env;
+  // In local dev there is no CF adapter env binding.
+  if (!env) {
+    throw new Error('Missing Cloudflare D1 binding env (local dev requires CF adapter)');
+  }
   return getD1FromEnv(env) as D1Local;
 }
+
 
 
 async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {

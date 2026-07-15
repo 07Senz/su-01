@@ -8,13 +8,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { action, id, password, adminPass, members } = body as any;
+  const { action, id, password, members } = body as any;
 
   // WARNING: demo-only auth.
-  const ADMIN_PASS = process.env.ADMIN_PASS ?? "123";
-  if (adminPass !== ADMIN_PASS) {
+  // For now, accept admin actions ONLY if the request includes the correct header.
+  // Client never sees ADMIN_PASS; it must be supplied by /api/admin/login via a cookie/header.
+  const ADMIN_PASS = process.env.ADMIN_PASS ?? "";
+  if (!ADMIN_PASS) {
+    return NextResponse.json(
+      { error: "ADMIN_PASS not configured" },
+      { status: 500 },
+    );
+  }
+
+  const adminAuth = req.headers.get("x-admin-pass") ?? "";
+  if (!adminAuth || adminAuth !== ADMIN_PASS) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
 
   if (
     !action ||
