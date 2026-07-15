@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 export type MemberRecord = {
   id: string;
   password: string;
-  memberType: "Core";
 };
 
 
@@ -36,7 +35,7 @@ function getD1(req: Request): D1Local {
 
 async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   const rows = await d1
-    .prepare("SELECT id, password, memberType FROM members ORDER BY id ASC")
+    .prepare("SELECT id, password FROM members ORDER BY id ASC")
     .all();
 
   // CF D1 returns different shapes depending on adapter.
@@ -44,10 +43,9 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   const list = Array.isArray(results) ? results : (rows as any)?.results ?? [];
 
   return (list as any[]).map((r) => ({
-    id: String(r.id),
-    password: String(r.password ?? ""),
-    memberType: "Core",
-  }));
+  id: String(r.id),
+  password: String(r.password ?? ""),
+}));
 }
 
 
@@ -56,9 +54,11 @@ async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
   for (const m of members) {
     await d1
       .prepare(
-        "INSERT INTO members (id, password, memberType) VALUES (?1, ?2, ?3)\n         ON CONFLICT(id) DO UPDATE SET password = excluded.password, memberType = excluded.memberType",
-      )
-      .bind(m.id, m.password, m.memberType)
+        `INSERT INTO members (id, password)
+         VALUES (?1, ?2)
+         ON CONFLICT(id) DO UPDATE SET
+         password = excluded.password`)
+      .bind(m.id, m.password, )
       .run();
   }
 }
@@ -84,19 +84,20 @@ export async function POST(req: Request) {
   }
 
   const cleaned: MemberRecord[] = members
-    .map((m: any) => {
-      const id = String(m?.id ?? "").trim();
-      const password = String(m?.password ?? "");
-      const memberType = m?.memberType;
-      if (!id) return null;
-      // Roles removed; only Core is supported
-      if (memberType !== "Core") return null;
-      return { id, password, memberType: "Core" } as MemberRecord;
+  .map((m: any) => {
+    const id = String(m?.id ?? "").trim();
+    const password = String(m?.password ?? "");
 
-    })
-    .filter(Boolean) as MemberRecord[];
+    if (!id) return null;
 
-  await d1UpsertMembers(d1, cleaned);
-  return NextResponse.json({ ok: true, members: cleaned });
+    return {
+      id,
+      password,
+    } as MemberRecord;
+  })
+  .filter(Boolean) as MemberRecord[];
+
+await d1UpsertMembers(d1, cleaned);
+return NextResponse.json({ ok: true, members: cleaned });
 }
 

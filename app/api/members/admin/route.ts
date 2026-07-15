@@ -42,11 +42,11 @@ export async function POST(req: Request) {
 
   const upsertOne = async (memberId: string, memberPassword: string) => {
     await d1
-      .prepare(
-        "INSERT INTO members (id, password, memberType) VALUES (?1, ?2, 'Core')\n         ON CONFLICT(id) DO UPDATE SET password = excluded.password, memberType = 'Core'",
-      )
-      .bind(memberId, memberPassword)
-      .run();
+  .prepare(
+    "INSERT INTO members (id, password, name) VALUES (?1, ?2, '') ON CONFLICT(id) DO UPDATE SET password = excluded.password"
+  )
+  .bind(memberId, memberPassword)
+  .run();
   };
 
   if (action === "upsert") {
@@ -65,7 +65,7 @@ export async function POST(req: Request) {
     if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
     await d1
-      .prepare("UPDATE members SET password = ?2, memberType = 'Core' WHERE id = ?1")
+      .prepare("UPDATE members SET password = ?2 WHERE id = ?1")
       .bind(cleanId, cleanPass)
       .run();
 

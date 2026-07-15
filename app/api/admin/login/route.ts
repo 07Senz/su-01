@@ -11,15 +11,16 @@ export async function POST(req: Request) {
     password?: string;
   };
 
-  const ADMIN_ID = process.env.ADMIN_ID ?? "";
-  const ADMIN_PASS = process.env.ADMIN_PASS ?? "";
+  // Temporary admin login
+const ADMIN_ID = "005";
+const ADMIN_PASS = "2006";
 
   if (!ADMIN_ID || !ADMIN_PASS) {
-    return NextResponse.json(
-      { error: "ADMIN_ID/ADMIN_PASS not configured" },
-      { status: 500 },
-    );
-  }
+  return NextResponse.json(
+    { error: "ADMIN_ID/ADMIN_PASS not configured" },
+    { status: 500 },
+  );
+}
 
   // Admin is numbers only (normalize any accidental non-digits)
   const cleanAdminId = String(adminId ?? "").replace(/\D+/g, "").trim();
