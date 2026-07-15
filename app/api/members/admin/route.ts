@@ -1,27 +1,6 @@
 import { NextResponse } from "next/server";
-import fs from "fs/promises";
-import path from "path";
 
-const STORE_PATH = path.join(process.cwd(), "app", ".server", "memberStore.json");
-
-async function readStore() {
-  try {
-    const raw = await fs.readFile(STORE_PATH, "utf8");
-    const parsed = JSON.parse(raw);
-    return { members: Array.isArray(parsed?.members) ? parsed.members : [] };
-  } catch {
-    return { members: [] as any[] };
-  }
-}
-
-async function writeStore(members: any[]) {
-  await fs.mkdir(path.dirname(STORE_PATH), { recursive: true });
-  await fs.writeFile(
-    STORE_PATH,
-    JSON.stringify({ members }, null, 2),
-    "utf8",
-  );
-}
+import { getD1FromEnv } from "../_cf/d1";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -29,23 +8,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { action, id, password, adminPass } = body as any;
+  const { action, id, password, adminPass, members } = body as any;
 
-
-
-  // WARNING: this is only for this demo app.
+  // WARNING: demo-only auth.
   const ADMIN_PASS = process.env.ADMIN_PASS ?? "123";
   if (adminPass !== ADMIN_PASS) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (!action || (action !== "upsert" && action !== "reset" && action !== "delete" && action !== "import")) {
+  if (
+    !action ||
+    (action !== "upsert" &&
+      action !== "reset" &&
+      action !== "delete" &&
+      action !== "import")
+  ) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
+  const env = (req as any).env;
+  const d1 = getD1FromEnv(env);
 
-  const store = await readStore();
-  let members = store.members;
+  const upsertOne = async (memberId: string, memberPassword: string) => {
+    await d1
+      .prepare(
+        "INSERT INTO members (id, password, memberType) VALUES (?1, ?2, 'Core')\n         ON CONFLICT(id) DO UPDATE SET password = excluded.password, memberType = 'Core'",
+      )
+      .bind(memberId, memberPassword)
+      .run();
+  };
 
   if (action === "upsert") {
     const cleanId = String(id ?? "").trim();
@@ -53,26 +44,48 @@ export async function POST(req: Request) {
 
     if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-    // Roles removed; only Core is supported. Ignore any incoming memberType.
-    const idx = members.findIndex((m: any) => String(m?.id ?? "").trim() === cleanId);
-    const next = { id: cleanId, password: cleanPass, memberType: "Core" };
-
-    if (idx >= 0) members = members.map((m: any, i: number) => (i === idx ? next : m));
-    else members = [...members, next];
+    await upsertOne(cleanId, cleanPass);
+    return NextResponse.json({ ok: true });
   }
-
 
   if (action === "reset") {
     const cleanId = String(id ?? "").trim();
     const cleanPass = String(password ?? "");
     if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-    members = members.map((m: any) =>
-      String(m?.id ?? "").trim() === cleanId ? { ...m, password: cleanPass } : m,
-    );
+    await d1
+      .prepare("UPDATE members SET password = ?2, memberType = 'Core' WHERE id = ?1")
+      .bind(cleanId, cleanPass)
+      .run();
+
+    return NextResponse.json({ ok: true });
   }
 
-  await writeStore(members);
-  return NextResponse.json({ ok: true, members });
+  if (action === "delete") {
+    const cleanId = String(id ?? "").trim();
+    if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+    await d1.prepare("DELETE FROM members WHERE id = ?1").bind(cleanId).run();
+    return NextResponse.json({ ok: true });
+  }
+
+  // action === "import"
+  if (action === "import") {
+    const list = Array.isArray(members) ? members : Array.isArray(body?.members) ? body.members : null;
+    if (!list) {
+      return NextResponse.json({ error: "members[] is required" }, { status: 400 });
+    }
+
+    for (const m of list) {
+      const cleanId = String(m?.id ?? "").trim();
+      if (!cleanId) continue;
+      const cleanPass = String(m?.password ?? "");
+      await upsertOne(cleanId, cleanPass);
+    }
+
+    return NextResponse.json({ ok: true });
+  }
+
+  return NextResponse.json({ error: "Unhandled action" }, { status: 400 });
 }
 

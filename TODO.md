@@ -1,7 +1,5 @@
 - [x] Remove G.M and E.M roles completely
-
 - [x] Update member/memberType types across UI and API
-
 - [x] Ensure admin login shows Admin Panel after success
 - [x] Implement Admin Panel UI: add/edit/delete/reset password/export/import
 - [x] Connect Admin Panel to existing /api/members/admin API
@@ -9,4 +7,8 @@
 - [x] Verify: `npx tsc -p tsconfig.json --noEmit`
 - [x] Verify: `npm run build`
 - [x] List every modified file
+- [x] Fix Cloudflare deployment failing due to Wrangler Node.js >=22 requirement (updated .nvmrc)
+- [ ] Fix why admin changes didn’t reflect: migrate app/api/members/admin/route.ts from filesystem JSON store to D1
+- [ ] Update app/api/members/admin/d1-schema.sql to only allow memberType='Core'
+- [ ] Redeploy and verify /api/members reflects admin panel actions
 
