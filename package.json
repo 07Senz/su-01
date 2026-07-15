@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build --webpack",
-    "start": "next start",
-    "lint": "eslint",
-    "deploy:cloudflare": "echo \"Use Cloudflare Pages Functions for Next.js serverful deployment (adapter not auto-configured here).\"",
-    "prepare:out": "node -e \"const fs=require('fs'); if(!fs.existsSync('out')) fs.mkdirSync('out');\"",
-    "build:cf": "npm run prepare:out && npm run build"
-  },
+  "dev": "next dev",
+  "build": "next build --webpack",
+  "start": "next start",
+  "lint": "eslint",
+
+  "cf:build": "npx @opennextjs/cloudflare build",
+  "cf:deploy": "npm run build && npm run cf:build && npx wrangler deploy"
+},
   "dependencies": {
     "next": "16.2.10",
     "react": "19.2.4",

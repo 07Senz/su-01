@@ -42,6 +42,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/api/admin/login",
+      "regex": "^/api/admin/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/login(?:/)?$"
+    },
+    {
       "page": "/api/members",
       "regex": "^/api/members(?:/)?$",
       "routeKeys": {},
@@ -52,6 +58,18 @@
       "regex": "^/api/members/admin(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/members/admin(?:/)?$"
+    },
+    {
+      "page": "/api/members/delete",
+      "regex": "^/api/members/delete(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/members/delete(?:/)?$"
+    },
+    {
+      "page": "/api/members/reset",
+      "regex": "^/api/members/reset(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/members/reset(?:/)?$"
     },
     {
       "page": "/home",
