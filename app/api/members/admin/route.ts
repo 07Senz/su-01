@@ -5,18 +5,18 @@ import { getD1FromEnv } from "../_cf/d1";
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "InvalidJSON" }, { status: 400 });
   }
 
   const { action, id, password, members } = body as any;
 
   // WARNING: demo-only auth.
   // For now, accept admin actions ONLY if the request includes the correct header.
-  // Client never sees ADMIN_PASS; it must be supplied by /api/admin/login via a cookie/header.
-  const ADMIN_PASS = process.env.ADMIN_PASS ?? "";
+  // Client never sees ADMIN_PASS beyond this env var; it's baked in at build time.
+  const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS ?? "";
   if (!ADMIN_PASS) {
     return NextResponse.json(
-      { error: "ADMIN_PASS not configured" },
+      { error: "NEXT_PUBLIC_ADMIN_PASS not configured" },
       { status: 500 },
     );
   }
@@ -39,13 +39,12 @@ export async function POST(req: Request) {
   const env = (req as any).env;
   const d1 = getD1FromEnv(env);
 
-  // The real database table only has: id, password, name (name is required,
-  // so we save it as blank since members never enter a name anywhere).
+  // Schema: members(id TEXT PRIMARY KEY, password TEXT NOT NULL, memberType TEXT NOT NULL CHECK (memberType IN ('Core')))
   const upsertOne = async (memberId: string, memberPassword: string) => {
     await d1
       .prepare(
-        `INSERT INTO members (id, password, name)
-         VALUES (?1, ?2, '')
+        `INSERT INTO members (id, password, memberType)
+         VALUES (?1, ?2, 'Core')
          ON CONFLICT(id) DO UPDATE SET password = excluded.password`
       )
       .bind(memberId, memberPassword)

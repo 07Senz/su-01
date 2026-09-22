@@ -20,9 +20,7 @@ import { getD1FromEnv } from "../_cf/d1";
 // Your Cloudflare adapter must call this route with `env` available.
 // Next.js doesn't provide `env` automatically, so the adapter wiring is required.
 function getD1(req: Request): D1Local {
-  // env is injected by the CF adapter at runtime; Request doesn't type it.
   const env = (req as any).env;
-  // In local dev there is no CF adapter env binding.
   if (!env) {
     throw new Error('Missing Cloudflare D1 binding env (local dev requires CF adapter)');
   }
@@ -34,7 +32,6 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
     .prepare("SELECT id, password FROM members ORDER BY id ASC")
     .all();
 
-  // CF D1 returns different shapes depending on adapter.
   const results = (rows as any)?.results ?? (rows as any);
   const list = Array.isArray(results) ? results : (rows as any)?.results ?? [];
 
@@ -44,14 +41,13 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   }));
 }
 
-// The real database table only has: id, password, name (name is required,
-// so we save it as blank since members never enter a name anywhere).
+// Schema: members(id TEXT PRIMARY KEY, password TEXT NOT NULL, memberType TEXT NOT NULL CHECK (memberType IN ('Core')))
 async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
   for (const m of members) {
     await d1
       .prepare(
-        `INSERT INTO members (id, password, name)
-         VALUES (?1, ?2, '')
+        `INSERT INTO members (id, password, memberType)
+         VALUES (?1, ?2, 'Core')
          ON CONFLICT(id) DO UPDATE SET
          password = excluded.password`)
       .bind(m.id, m.password)
@@ -70,7 +66,7 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: "InvalidJSON" }, { status: 400 });
   }
 
   const members = Array.isArray((body as any).members) ? (body as any).members : null;
