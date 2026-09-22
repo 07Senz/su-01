@@ -5,8 +5,6 @@ export type MemberRecord = {
   password: string;
 };
 
-
-
 type D1Local = {
   prepare: (sql: string) => {
     bind: (...args: any[]) => {
@@ -31,8 +29,6 @@ function getD1(req: Request): D1Local {
   return getD1FromEnv(env) as D1Local;
 }
 
-
-
 async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   const rows = await d1
     .prepare("SELECT id, password FROM members ORDER BY id ASC")
@@ -43,22 +39,22 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
   const list = Array.isArray(results) ? results : (rows as any)?.results ?? [];
 
   return (list as any[]).map((r) => ({
-  id: String(r.id),
-  password: String(r.password ?? ""),
-}));
+    id: String(r.id),
+    password: String(r.password ?? ""),
+  }));
 }
 
-
-
+// The real database table only has: id, password, name (name is required,
+// so we save it as blank since members never enter a name anywhere).
 async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
   for (const m of members) {
     await d1
       .prepare(
-        `INSERT INTO members (id, password)
-         VALUES (?1, ?2)
+        `INSERT INTO members (id, password, name)
+         VALUES (?1, ?2, '')
          ON CONFLICT(id) DO UPDATE SET
          password = excluded.password`)
-      .bind(m.id, m.password, )
+      .bind(m.id, m.password)
       .run();
   }
 }
@@ -72,7 +68,6 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const d1 = getD1(req);
 
-
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
@@ -84,20 +79,19 @@ export async function POST(req: Request) {
   }
 
   const cleaned: MemberRecord[] = members
-  .map((m: any) => {
-    const id = String(m?.id ?? "").trim();
-    const password = String(m?.password ?? "");
+    .map((m: any) => {
+      const id = String(m?.id ?? "").trim();
+      const password = String(m?.password ?? "");
 
-    if (!id) return null;
+      if (!id) return null;
 
-    return {
-      id,
-      password,
-    } as MemberRecord;
-  })
-  .filter(Boolean) as MemberRecord[];
+      return {
+        id,
+        password,
+      } as MemberRecord;
+    })
+    .filter(Boolean) as MemberRecord[];
 
-await d1UpsertMembers(d1, cleaned);
-return NextResponse.json({ ok: true, members: cleaned });
+  await d1UpsertMembers(d1, cleaned);
+  return NextResponse.json({ ok: true, members: cleaned });
 }
-

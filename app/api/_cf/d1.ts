@@ -1,7 +1,5 @@
-// Cloudflare Pages Functions adapter should expose D1 databases in `env`.
-// In your case the binding name is: env["su-01"].
-// Note: Next.js route handlers normally don't receive `env` directly;
-// this helper expects you to pass it from your CF adapter.
+// Cloudflare Workers adapter that exposes the D1 database bound in wrangler.jsonc.
+// The binding name is: env["su-01"]
 
 type D1Like = {
   prepare: (sql: string) => {
@@ -9,6 +7,7 @@ type D1Like = {
       run: () => Promise<any>;
       all: () => Promise<any>;
     };
+    all: () => Promise<any>;
   };
 };
 
@@ -19,4 +18,3 @@ export function getD1FromEnv(env: any): D1Like {
   }
   return d1 as D1Like;
 }
-

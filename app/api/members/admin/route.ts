@@ -26,7 +26,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-
   if (
     !action ||
     (action !== "upsert" &&
@@ -40,13 +39,17 @@ export async function POST(req: Request) {
   const env = (req as any).env;
   const d1 = getD1FromEnv(env);
 
+  // The real database table only has: id, password, name (name is required,
+  // so we save it as blank since members never enter a name anywhere).
   const upsertOne = async (memberId: string, memberPassword: string) => {
     await d1
-  .prepare(
-    "INSERT INTO members (id, password, name) VALUES (?1, ?2, '') ON CONFLICT(id) DO UPDATE SET password = excluded.password"
-  )
-  .bind(memberId, memberPassword)
-  .run();
+      .prepare(
+        `INSERT INTO members (id, password, name)
+         VALUES (?1, ?2, '')
+         ON CONFLICT(id) DO UPDATE SET password = excluded.password`
+      )
+      .bind(memberId, memberPassword)
+      .run();
   };
 
   if (action === "upsert") {
@@ -99,4 +102,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ error: "Unhandled action" }, { status: 400 });
 }
-

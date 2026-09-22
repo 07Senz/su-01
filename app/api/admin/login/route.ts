@@ -11,16 +11,20 @@ export async function POST(req: Request) {
     password?: string;
   };
 
-  // Temporary admin login
-const ADMIN_ID = "005";
-const ADMIN_PASS = "2006";
+  // FIXED: this used to be hardcoded ("005" / "2006"), visible to anyone
+  // reading your source code, AND different from the password used by
+  // /api/members/admin (which reads ADMIN_PASS). Now both read the same
+  // environment variable, so logging in and actually managing members
+  // use the same password.
+  const ADMIN_ID = process.env.ADMIN_ID ?? "005";
+  const ADMIN_PASS = process.env.ADMIN_PASS ?? "";
 
-  if (!ADMIN_ID || !ADMIN_PASS) {
-  return NextResponse.json(
-    { error: "ADMIN_ID/ADMIN_PASS not configured" },
-    { status: 500 },
-  );
-}
+  if (!ADMIN_PASS) {
+    return NextResponse.json(
+      { error: "ADMIN_PASS not configured" },
+      { status: 500 },
+    );
+  }
 
   // Admin is numbers only (normalize any accidental non-digits)
   const cleanAdminId = String(adminId ?? "").replace(/\D+/g, "").trim();
@@ -40,4 +44,3 @@ const ADMIN_PASS = "2006";
 
   return NextResponse.json({ ok: true });
 }
-
