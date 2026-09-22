@@ -1,5 +1,4 @@
-// Cloudflare Workers adapter that exposes the D1 database bound in wrangler.jsonc.
-// The binding name is: env["su-01"]
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 type D1Like = {
   prepare: (sql: string) => {
@@ -11,10 +10,14 @@ type D1Like = {
   };
 };
 
-export function getD1FromEnv(env: any): D1Like {
-  const d1 = env?.["su-01"];
+export function getD1FromEnv(): D1Like {
+  const { env } = getCloudflareContext();
+
+  const d1 = (env as any)?.DB;
+
   if (!d1) {
-    throw new Error('Missing Cloudflare D1 binding env["su-01"]');
+    throw new Error("Missing Cloudflare D1 binding env.DB");
   }
+
   return d1 as D1Like;
 }

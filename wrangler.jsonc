@@ -8,13 +8,12 @@
   },
   "d1_databases": [
     {
-      "binding": "su-01",
+      "binding": "DB",
       "database_name": "su-01",
-
       "database_id": "63a6207f-0865-447d-9b77-89b51abe499f"
     }
   ],
   "vars": {
-    "NEXT_PUBLIC_ADMIN_PASS": "2006"
+    "ADMIN_PASS": "2006"
   }
 }

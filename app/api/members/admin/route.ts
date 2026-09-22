@@ -1,27 +1,26 @@
 import { NextResponse } from "next/server";
-
-import { getD1FromEnv } from "../_cf/d1";
+import { getD1FromEnv } from "../../_cf/d1";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
+
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "InvalidJSON" }, { status: 400 });
   }
 
   const { action, id, password, members } = body as any;
 
-  // WARNING: demo-only auth.
-  // For now, accept admin actions ONLY if the request includes the correct header.
-  // Client never sees ADMIN_PASS beyond this env var; it's baked in at build time.
-  const ADMIN_PASS = process.env.NEXT_PUBLIC_ADMIN_PASS ?? "";
+  const ADMIN_PASS = process.env.ADMIN_PASS ?? "";
+
   if (!ADMIN_PASS) {
     return NextResponse.json(
-      { error: "NEXT_PUBLIC_ADMIN_PASS not configured" },
+      { error: "ADMIN_PASS not configured" },
       { status: 500 },
     );
   }
 
   const adminAuth = req.headers.get("x-admin-pass") ?? "";
+
   if (!adminAuth || adminAuth !== ADMIN_PASS) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -36,35 +35,48 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
-  const env = (req as any).env;
-  const d1 = getD1FromEnv(env);
+  const d1 = getD1FromEnv();
 
-  // Schema: members(id TEXT PRIMARY KEY, password TEXT NOT NULL, memberType TEXT NOT NULL CHECK (memberType IN ('Core')))
-  const upsertOne = async (memberId: string, memberPassword: string) => {
+  const upsertOne = async (
+    memberId: string,
+    memberPassword: string,
+    memberName?: string,
+  ) => {
+    const nameValue = memberName && memberName.trim() ? memberName.trim() : memberId;
+
     await d1
       .prepare(
-        `INSERT INTO members (id, password, memberType)
-         VALUES (?1, ?2, 'Core')
-         ON CONFLICT(id) DO UPDATE SET password = excluded.password`
+        `INSERT INTO members (id, password, name, memberType)
+         VALUES (?1, ?2, ?3, 'Core')
+         ON CONFLICT(id) DO UPDATE SET
+         password = excluded.password,
+         name = excluded.name`,
       )
-      .bind(memberId, memberPassword)
+      .bind(memberId, memberPassword, nameValue)
       .run();
   };
 
   if (action === "upsert") {
     const cleanId = String(id ?? "").trim();
     const cleanPass = String(password ?? "");
+    const cleanName = String((body as any).name ?? "");
 
-    if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+    if (!cleanId) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
 
-    await upsertOne(cleanId, cleanPass);
+    await upsertOne(cleanId, cleanPass, cleanName);
+
     return NextResponse.json({ ok: true });
   }
 
   if (action === "reset") {
     const cleanId = String(id ?? "").trim();
     const cleanPass = String(password ?? "");
-    if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+    if (!cleanId) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
 
     await d1
       .prepare("UPDATE members SET password = ?2 WHERE id = ?1")
@@ -76,15 +88,19 @@ export async function POST(req: Request) {
 
   if (action === "delete") {
     const cleanId = String(id ?? "").trim();
-    if (!cleanId) return NextResponse.json({ error: "id is required" }, { status: 400 });
+
+    if (!cleanId) {
+      return NextResponse.json({ error: "id is required" }, { status: 400 });
+    }
 
     await d1.prepare("DELETE FROM members WHERE id = ?1").bind(cleanId).run();
+
     return NextResponse.json({ ok: true });
   }
 
-  // action === "import"
   if (action === "import") {
-    const list = Array.isArray(members) ? members : Array.isArray(body?.members) ? body.members : null;
+    const list = Array.isArray(members) ? members : null;
+
     if (!list) {
       return NextResponse.json({ error: "members[] is required" }, { status: 400 });
     }
@@ -93,7 +109,8 @@ export async function POST(req: Request) {
       const cleanId = String(m?.id ?? "").trim();
       if (!cleanId) continue;
       const cleanPass = String(m?.password ?? "");
-      await upsertOne(cleanId, cleanPass);
+      const cleanName = String(m?.name ?? "");
+      await upsertOne(cleanId, cleanPass, cleanName);
     }
 
     return NextResponse.json({ ok: true });

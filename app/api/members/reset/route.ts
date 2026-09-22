@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getD1FromEnv } from "../_cf/d1";
+import { getD1FromEnv } from "../../_cf/d1";
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-
   const id = String((body as any).id ?? "").trim();
   const password = String((body as any).password ?? "");
 
@@ -24,8 +23,7 @@ export async function POST(req: Request) {
   if (!password)
     return NextResponse.json({ error: "password is required" }, { status: 400 });
 
-  const env = (req as any).env;
-  const d1 = getD1FromEnv(env);
+  const d1 = getD1FromEnv();
 
   // Reset password ONLY (memberType unchanged)
   await d1
@@ -35,4 +33,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ ok: true });
 }
-

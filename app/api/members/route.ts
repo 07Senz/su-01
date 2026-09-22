@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getD1FromEnv } from "../_cf/d1";
 
 export type MemberRecord = {
   id: string;
@@ -15,16 +16,8 @@ type D1Local = {
   };
 };
 
-import { getD1FromEnv } from "../_cf/d1";
-
-// Your Cloudflare adapter must call this route with `env` available.
-// Next.js doesn't provide `env` automatically, so the adapter wiring is required.
-function getD1(req: Request): D1Local {
-  const env = (req as any).env;
-  if (!env) {
-    throw new Error('Missing Cloudflare D1 binding env (local dev requires CF adapter)');
-  }
-  return getD1FromEnv(env) as D1Local;
+function getD1(): D1Local {
+  return getD1FromEnv() as D1Local;
 }
 
 async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
@@ -33,45 +26,60 @@ async function d1GetMembers(d1: D1Local): Promise<MemberRecord[]> {
     .all();
 
   const results = (rows as any)?.results ?? (rows as any);
-  const list = Array.isArray(results) ? results : (rows as any)?.results ?? [];
+  const list = Array.isArray(results) ? results : [];
 
-  return (list as any[]).map((r) => ({
+  return list.map((r: any) => ({
     id: String(r.id),
     password: String(r.password ?? ""),
   }));
 }
 
-// Schema: members(id TEXT PRIMARY KEY, password TEXT NOT NULL, memberType TEXT NOT NULL CHECK (memberType IN ('Core')))
-async function d1UpsertMembers(d1: D1Local, members: MemberRecord[]) {
+async function d1UpsertMembers(
+  d1: D1Local,
+  members: MemberRecord[],
+) {
   for (const m of members) {
     await d1
       .prepare(
         `INSERT INTO members (id, password, memberType)
          VALUES (?1, ?2, 'Core')
          ON CONFLICT(id) DO UPDATE SET
-         password = excluded.password`)
+         password = excluded.password`,
+      )
       .bind(m.id, m.password)
       .run();
   }
 }
 
-export async function GET(req: Request) {
-  const d1 = getD1(req);
+export async function GET() {
+  const d1 = getD1();
+
   const members = await d1GetMembers(d1);
+
   return NextResponse.json({ members });
 }
 
 export async function POST(req: Request) {
-  const d1 = getD1(req);
+  const d1 = getD1();
 
   const body = await req.json().catch(() => null);
+
   if (!body || typeof body !== "object") {
-    return NextResponse.json({ error: "InvalidJSON" }, { status: 400 });
+    return NextResponse.json(
+      { error: "InvalidJSON" },
+      { status: 400 },
+    );
   }
 
-  const members = Array.isArray((body as any).members) ? (body as any).members : null;
+  const members = Array.isArray((body as any).members)
+    ? (body as any).members
+    : null;
+
   if (!members) {
-    return NextResponse.json({ error: "members[] is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "members[] is required" },
+      { status: 400 },
+    );
   }
 
   const cleaned: MemberRecord[] = members
@@ -84,10 +92,14 @@ export async function POST(req: Request) {
       return {
         id,
         password,
-      } as MemberRecord;
+      };
     })
     .filter(Boolean) as MemberRecord[];
 
   await d1UpsertMembers(d1, cleaned);
-  return NextResponse.json({ ok: true, members: cleaned });
+
+  return NextResponse.json({
+    ok: true,
+    members: cleaned,
+  });
 }
